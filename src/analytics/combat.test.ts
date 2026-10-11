@@ -6,7 +6,7 @@ import { bucketOf, foldCombatLedger, renderCombatReport, takenOf } from './comba
  * (synthetic ones: no campaign facts in this repo) and the MCP handler block is replaced by
  * src/tools/analyze-combat.test.ts.
  *
- * Fold pins against the battleflow §4 wire format. The fixture mirrors shapes VERIFIED against
+ * Fold pins against the By the Books (formerly Battle Flow) §4 wire format. The fixture mirrors shapes VERIFIED against
  * the live sandbox battle of 2026-08-27 (scan dump), not just the docs: receipt entries
  * (prior/delta/taken/reverted/combat/sourceUuid), effectReceipt records, spend rows/slots,
  * d20fold spends+targets, saves/concentration rollMessageId joins.

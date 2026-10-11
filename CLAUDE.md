@@ -8,18 +8,26 @@ The home of **session summaries and analytics** for Foundry VTT (dnd5e) tables: 
 (registered at user scope as `sessionscribe`), driven by Claude Code through the
 `session-scribe` skill. It reads what happened at a session and writes the session record into
 the campaign repo:
-- **Inputs:** the Craig voice recording, the Foundry chat log, Battle Flow's combat stats, the
-  party's sheets.
+- **Inputs:** the Craig voice recording, the Foundry chat log, By the Books' combat stats
+  (Battle Flow's before its 3.0.0 rename), the party's sheets.
 - **Record:** transcripts, recaps, combat logs, GM notes, party snapshots.
 
 It **reads the world and never writes it**. The session-diary page and the bestiary are authored
 through `fvtt-mcp-dnd5e`.
 
-**State (2026-10-10).** Released as **1.0.0** on 2026-09-30; renamed from `fvtt-app-sessionscribe`
-and moved under the suite folder on 2026-10-08 (`../fvtt-mcp-dnd5e` still resolves; the campaign
-repos are now `../../fvtt-campaign-*`). The server key is `sessionscribe` since 2026-10-10 (was
-`scribe`; tools are `mcp__sessionscribe__*`), released as **1.1.0** with the setup checks; **1.2.0** adds `npm run doctor` and `npm run install-skill`. The campaign it was built for
-concluded with session 9 (2026-09-29), and nothing is pending.
+**State (2026-10-11).** At **1.3.0** (2026-10-11, committed, not yet tagged or pushed): it reads
+By the Books, Battle Flow's new name from its 3.0.0 (package id `fvtt-mod-bythebooks`,
+Txpple/fvtt-mod-battleflow#6). The scan reads each card's stamps from the new flag scope and
+falls back to `fvtt-mod-battleflow` on that same card, since pre-upgrade cards keep the old scope
+forever; the probe reports `bythebooks { active, version, id }`, preferring the new id and
+falling back to a table still on 2.x. Released as **1.0.0** on 2026-09-30; renamed from
+`fvtt-app-sessionscribe` and moved under the suite folder on 2026-10-08 (`../fvtt-mcp-dnd5e`
+still resolves; the campaign repos are `../../fvtt-campaign-*`). The server key is
+`sessionscribe` since 2026-10-10 (was `scribe`; tools are `mcp__sessionscribe__*`); **1.1.0**
+added the setup checks, **1.2.0** `npm run doctor` and `npm run install-skill`, **1.2.1** the
+bridge's Assistant GM user as the scribe's login. The campaign it was built for concluded with
+session 9 (2026-09-29). Pending: the 1.3.0 tag and push; a live read of a 3.0.0 card on the
+sandbox once By the Books is installed there.
 [NEXT-SESSION.md](NEXT-SESSION.md) is the handoff's history and the hard-won lessons;
 [CHANGELOG.md](CHANGELOG.md) is the release record.
 Broken out of `fvtt-mcp-dnd5e` by owner ruling (reversing that repo's 3.0 decisions #16 and
@@ -35,7 +43,7 @@ Broken out of `fvtt-mcp-dnd5e` by owner ruling (reversing that repo's 3.0 decisi
   - the reader's gate `scripts/verify-reader.mjs`;
   - parity with the MCP for analyze-combat, export-session-chat and snapshot-party.
 - **Retired:** the MCP's copies went in `fvtt-mcp-dnd5e` 4.0.0 (`get-combat-stats`, the
-  `session-scribe` skill and `session_scribe.py`). Battle Flow and the campaign repo point here.
+  `session-scribe` skill and `session_scribe.py`). By the Books and the campaign repo point here.
   `export-chat-log` stays in the MCP for good as the general chat exporter.
 
 ## Commands
@@ -84,7 +92,7 @@ powershell -ExecutionPolicy Bypass -File scripts\setup.ps1 -PrefetchModel   # tr
   - It joins as `FOUNDRY_SCRIBE_USER` / `FOUNDRY_SCRIBE_PASSWORD` (both required), with the
     admin key stripped. On the house worlds that is the bridge's own Assistant GM user
     (`Assistant DM`), by owner ruling 2026-10-10, to stop user bloat; a separate Assistant GM
-    user also works. Why sharing is safe: Battle Flow's single-applier check is
+    user also works. Why sharing is safe: By the Books' single-applier check is
     `game.users.activeGM?.isSelf`, per user, so two clients on one user would both apply, but
     only while that user is the elected GM. Foundry elects the highest-role active GM, so with
     the DM (Gamemaster) connected the Assistant GM user is never elected, and
@@ -112,15 +120,17 @@ powershell -ExecutionPolicy Bypass -File scripts\setup.ps1 -PrefetchModel   # tr
 **The ports**
 - `src/analytics/combat.ts` and `src/page/combat-stats.ts` were ported verbatim from the MCP's
   `get-combat-stats`, adding only `until`. Since the MCP's 4.0.0 they are the only copy, so they
-  are free to evolve. The scan's key list is the read contract in Battle Flow's
-  `ARCHITECTURE.md` §4.
+  are free to evolve. The scan's key list is the read contract in By the Books'
+  `ARCHITECTURE.md` §4. Its flags sit under `fvtt-mod-bythebooks` on cards written since 3.0.0
+  and under `fvtt-mod-battleflow` on every earlier card (never migrated), so `stampScope` picks
+  the scope per message, the new one first.
 - `src/transcript/align.ts` is the retired `session_scribe.py align`, line for line, plus the
   whisper fix and `transcript-public.md`.
 - `src/pdf.ts` prints with headless Edge, then rasterises every page as a JPEG: a pdf.js preview
   page opened by headless Chromium (`fvtt-mcp-dnd5e`'s Playwright, resolved through that
   package), under `audio/previews/<output>-NN.jpg`. The Browser pane is not used for the look.
 - The trait meter ("traits denied") is arithmetic: the message's roll × the entry's save
-  multiplier − the post-trait part. Battle Flow's `traits[]` label is not consulted (it misreads
+  multiplier − the post-trait part. By the Books' `traits[]` label is not consulted (it misreads
   dnd5e's combined multiplier on a halved save).
 
 **The skill:** `.claude/skills/session-scribe/`, with its templates. `npm run install-skill`
@@ -153,7 +163,7 @@ junctions it to `~/.claude/skills/session-scribe`, so it loads in any project.
 - **Sandbox only** (`FOUNDRY_HOST=local`), never prod.
 - **One world-driver at a time.** Before a run:
   - check `node ../fvtt-mcp-dnd5e/scripts/local-foundry.mjs status`;
-  - check that no Battle Flow suite (`tools/*.mjs`) is running.
+  - check that no By the Books suite (`tools/*.mjs`) is running.
   - Other sessions run those suites as Tester Assistant. The scribe must never borrow that
     identity (the bridge's user is fine; Tester Assistant is not).
 - **Replays of real sessions** go to a scratch copy of the campaign repo (point

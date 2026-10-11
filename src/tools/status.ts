@@ -33,7 +33,7 @@ const statusSchema = z.object({
   connect: z
     .boolean()
     .default(false)
-    .describe('Also join Foundry as the scribe and report the world, the GMs and Battle Flow.'),
+    .describe('Also join Foundry as the scribe and report the world, the GMs and By the Books.'),
   host: hostSchema,
   waitSeconds: z
     .number()

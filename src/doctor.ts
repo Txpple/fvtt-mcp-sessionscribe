@@ -11,6 +11,7 @@
 
 import { loadCampaign } from './campaign.js';
 import type { HostName } from './config.js';
+import { rulesModuleLabel } from './foundry/protocol.js';
 import type { WorldReader } from './foundry/read.js';
 import {
   type HealthDeps,
@@ -221,7 +222,7 @@ async function checkJoin(deps: DoctorDeps, out: (l: Line) => void): Promise<stri
   out(
     ok(
       `"${p.user.name}" is on /join and joined ${p.worldId} (Foundry ${p.foundryVersion}, ` +
-        `${p.system.id} ${p.system.version}, Battle Flow ${p.battleflow?.active ? p.battleflow.version : 'absent'}); hung up`
+        `${p.system.id} ${p.system.version}, ${rulesModuleLabel(p.bythebooks)}); hung up`
     )
   );
   if (!p.user.isGM) {

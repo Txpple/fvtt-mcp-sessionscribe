@@ -32,6 +32,19 @@ export interface ReadResponse<T = unknown> {
 export const DEFAULT_READ_TIMEOUT_MS = 240_000;
 
 /**
+ * The probe's rules module for a human line: "By the Books 3.0.0", or, on a table still on 2.x,
+ * "Battle Flow 2.17.0 (now By the Books)"; ", inactive" when installed but off.
+ */
+export function rulesModuleLabel(m: WorldProbe['bythebooks']): string {
+  if (!m) return 'By the Books absent';
+  const name =
+    m.id === 'fvtt-mod-battleflow'
+      ? `Battle Flow ${m.version} (now By the Books)`
+      : `By the Books ${m.version}`;
+  return m.active ? name : `${name}, inactive`;
+}
+
+/**
  * Refuse a connection the scribe must not read through. Returns the refusal, or null to proceed.
  * Pure, so the rules are unit-tested rather than trusted to the live path.
  */
@@ -45,12 +58,12 @@ export function refusal(probe: WorldProbe, worldId: string | undefined): string 
   if (!probe.user.isGM) {
     return (
       `"${probe.user.name}" joined with role ${probe.user.role}: the scribe needs Assistant GM ` +
-      '(3) to see whispers and Battle Flow’s GM cards.'
+      '(3) to see whispers and By the Books’ GM cards.'
     );
   }
   if (probe.activeGM?.isSelf && probe.combatActive) {
     return (
-      'the scribe is the elected GM while a combat is running, so Battle Flow’s GM-only ' +
+      'the scribe is the elected GM while a combat is running, so By the Books’ GM-only ' +
       'automation would run on its page. Connect the DM’s client first, or end the combat.'
     );
   }

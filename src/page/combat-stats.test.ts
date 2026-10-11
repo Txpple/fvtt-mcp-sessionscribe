@@ -12,6 +12,7 @@ import {
   messageOrigin,
   messageRollType,
   messageTargets,
+  stampScope,
 } from './combat-stats.js';
 
 describe('BF_KEYS (the families the scan folds)', () => {
@@ -38,6 +39,25 @@ describe('BF_KEYS (the families the scan folds)', () => {
 
   it('leaves out castApply (unstamped by ruling) and the rollCtx / combatRoster riders', () => {
     for (const k of ['castApply', 'rollCtx', 'combatRoster']) expect(BF_KEYS).not.toContain(k);
+  });
+});
+
+describe('stampScope (the flag scope, per message)', () => {
+  const receipt = { entries: [] };
+  it("reads By the Books' scope, and Battle Flow's on a card written before the rename", () => {
+    expect(stampScope({ 'fvtt-mod-bythebooks': { receipt } })).toEqual({ receipt });
+    expect(stampScope({ 'fvtt-mod-battleflow': { receipt } })).toEqual({ receipt });
+    expect(stampScope({ dnd5e: {} })).toBeUndefined();
+    expect(stampScope(undefined)).toBeUndefined();
+  });
+
+  it('merges both on one message family by family, the new scope winning', () => {
+    const old = { receipt: { entries: ['old'] }, rollCtx: { combat: 'C1:1:0' } };
+    const fresh = { receipt: { entries: ['new'] } };
+    expect(stampScope({ 'fvtt-mod-battleflow': old, 'fvtt-mod-bythebooks': fresh })).toEqual({
+      receipt: { entries: ['new'] },
+      rollCtx: { combat: 'C1:1:0' },
+    });
   });
 });
 

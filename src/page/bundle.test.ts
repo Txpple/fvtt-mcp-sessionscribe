@@ -16,7 +16,7 @@ function fakeGame(over: Record<string, unknown> = {}) {
   const usersColl = Object.assign([...users], {
     activeGM: { name: 'Gamemaster', isSelf: false },
   });
-  const modules = new Map([['fvtt-mod-battleflow', { active: true, version: '1.2.3' }]]);
+  const modules = new Map([['fvtt-mod-bythebooks', { active: true, version: '3.0.0' }]]);
   return {
     world: { id: 'lost-mine', title: 'Lost Mine' },
     version: '14.368',
@@ -70,18 +70,61 @@ describe('page bundle', () => {
         { name: 'Scribe Assistant', role: 3 },
       ],
       combatActive: false,
-      battleflow: { active: true, version: '1.2.3' },
+      bythebooks: { active: true, version: '3.0.0', id: 'fvtt-mod-bythebooks' },
       messageCount: 42,
     });
   });
 
-  it('reports no Battle Flow, no elected GM and a running combat', async () => {
+  async function probeWith(modules: Map<string, { active: boolean; version: string }>) {
+    const window: Record<string, any> = {};
+    vm.runInContext(
+      await bundleSource(),
+      vm.createContext({ window, game: fakeGame({ modules }) })
+    );
+    return JSON.parse(await window.__scribe.probe()).bythebooks;
+  }
+
+  it('falls back to Battle Flow 2.x when By the Books is absent or inactive', async () => {
+    const legacy = { active: true, version: '2.17.0' };
+    expect(await probeWith(new Map([['fvtt-mod-battleflow', legacy]]))).toEqual({
+      ...legacy,
+      id: 'fvtt-mod-battleflow',
+    });
+    expect(
+      await probeWith(
+        new Map([
+          ['fvtt-mod-bythebooks', { active: false, version: '3.0.0' }],
+          ['fvtt-mod-battleflow', legacy],
+        ])
+      )
+    ).toEqual({ ...legacy, id: 'fvtt-mod-battleflow' });
+    // both installed, both off: the new one is reported, inactive
+    expect(
+      await probeWith(
+        new Map([
+          ['fvtt-mod-bythebooks', { active: false, version: '3.0.0' }],
+          ['fvtt-mod-battleflow', { active: false, version: '2.17.0' }],
+        ])
+      )
+    ).toEqual({ active: false, version: '3.0.0', id: 'fvtt-mod-bythebooks' });
+    // both active (mid-upgrade): By the Books wins
+    expect(
+      await probeWith(
+        new Map([
+          ['fvtt-mod-bythebooks', { active: true, version: '3.0.0' }],
+          ['fvtt-mod-battleflow', legacy],
+        ])
+      )
+    ).toEqual({ active: true, version: '3.0.0', id: 'fvtt-mod-bythebooks' });
+  });
+
+  it('reports no By the Books, no elected GM and a running combat', async () => {
     const window: Record<string, any> = {};
     const game = fakeGame({ modules: new Map(), combats: [{ started: true }] });
     (game.users as any).activeGM = null;
     vm.runInContext(await bundleSource(), vm.createContext({ window, game }));
     const probe = JSON.parse(await window.__scribe.probe());
-    expect(probe.battleflow).toBeNull();
+    expect(probe.bythebooks).toBeNull();
     expect(probe.activeGM).toBeNull();
     expect(probe.combatActive).toBe(true);
   });

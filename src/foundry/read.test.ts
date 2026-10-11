@@ -3,7 +3,7 @@ import * as os from 'node:os';
 import * as path from 'node:path';
 import { afterAll, describe, expect, it } from 'vitest';
 import type { WorldProbe } from '../page/probe.js';
-import { parseReply, refusal, SENTINEL, scribeUserMissing } from './protocol.js';
+import { parseReply, refusal, rulesModuleLabel, SENTINEL, scribeUserMissing } from './protocol.js';
 import { childReader } from './read.js';
 
 const PROBE: WorldProbe = {
@@ -18,7 +18,7 @@ const PROBE: WorldProbe = {
     { name: 'Scribe Assistant', role: 3 },
   ],
   combatActive: false,
-  battleflow: { active: true, version: '1.0.0' },
+  bythebooks: { active: true, version: '3.0.0', id: 'fvtt-mod-bythebooks' },
   messageCount: 12,
 };
 
@@ -36,6 +36,21 @@ describe('refusal', () => {
     const elected = { ...PROBE, activeGM: { name: 'Scribe Assistant', isSelf: true } };
     expect(refusal(elected, 'lost-mine')).toBeNull();
     expect(refusal({ ...elected, combatActive: true }, 'lost-mine')).toMatch(/elected GM/);
+  });
+});
+
+describe('rulesModuleLabel', () => {
+  it('names By the Books, or Battle Flow 2.x as what it became, and says inactive or absent', () => {
+    expect(rulesModuleLabel({ active: true, version: '3.0.0', id: 'fvtt-mod-bythebooks' })).toBe(
+      'By the Books 3.0.0'
+    );
+    expect(rulesModuleLabel({ active: true, version: '2.17.0', id: 'fvtt-mod-battleflow' })).toBe(
+      'Battle Flow 2.17.0 (now By the Books)'
+    );
+    expect(rulesModuleLabel({ active: false, version: '3.0.0', id: 'fvtt-mod-bythebooks' })).toBe(
+      'By the Books 3.0.0, inactive'
+    );
+    expect(rulesModuleLabel(null)).toBe('By the Books absent');
   });
 });
 

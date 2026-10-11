@@ -1,5 +1,5 @@
 // analyze-combat: the combat analytics of a session (was fvtt-mcp-dnd5e's get-combat-stats). The
-// reader child scans Battle Flow's stat-stamped chat messages page-side; the fold and the report
+// reader child scans By the Books' stat-stamped chat messages (either scope) page-side; the fold and the report
 // are the pure, verbatim-ported src/analytics/combat.ts. GM-facing by ruling: exact numbers,
 // filtered at call time (sections / actor / combat), never redacted.
 
@@ -42,7 +42,7 @@ export class AnalyzeCombatTool {
       {
         name: 'analyze-combat',
         description:
-          "A session's combat analytics from Battle Flow's stat-stamped chat messages: per combat " +
+          "A session's combat analytics from By the Books' stat-stamped chat messages: per combat " +
           'damage dealt / taken, accuracy, healing, verdict flips, spends, moments (reminders, ' +
           'chips, wards, maneuvers), Bless margins, flavor ' +
           '(nat 20s / 1s, advantage, death saves, decision speed). Reverted applications are ' +
@@ -82,10 +82,10 @@ export class AnalyzeCombatTool {
       sections: p.sections,
       actor: p.actor,
     });
-    const bf = r.probe?.battleflow;
+    const btb = r.probe?.bythebooks;
     const stamp =
       `_${host} · ${describeWindow(window)} · read ${r.readAt ?? '?'}` +
-      `${bf ? '' : ' · ⚠ Battle Flow is not installed in this world: no stamps to fold'}_`;
+      `${btb ? '' : ' · ⚠ By the Books is not installed in this world: no stamps to fold'}_`;
     const body = `${stamp}\n${report}`;
     if (!p.includeLedger) return body;
     return `${body}\n\n\`\`\`json\n${JSON.stringify({ ledger, rosters: scan.rosters ?? {} })}\n\`\`\``;

@@ -60,8 +60,8 @@ left, in order, with its gates. Update it as you go, and delete a step's block w
 - Check `FOUNDRY_HOST=local node ../fvtt-mcp-dnd5e/scripts/local-foundry.mjs status`.
 - Check for `node … tools/*.mjs` / `verify-*` processes:
   `Get-CimInstance Win32_Process -Filter "Name='node.exe'"`.
-- Other sessions run suites there: Battle Flow (Tester Assistant), and on 2026-09-23 also
-  `fvtt-mod-partystash`. The Battle Flow session announces a hold by cross-session message; wait
+- Other sessions run suites there: By the Books (Battle Flow until 3.0.0; Tester Assistant), and on
+  2026-09-23 also `fvtt-mod-partystash`. The By the Books session announces a hold by cross-session message; wait
   for its all-clear.
 
 ## Landed: Battle Flow's newer stamp families (2026-09-23 evening)

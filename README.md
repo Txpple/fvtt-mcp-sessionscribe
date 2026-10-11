@@ -5,8 +5,8 @@
 An [MCP](https://modelcontextprotocol.io) server that turns a night at a **D&D 5e**
 [Foundry VTT](https://foundryvtt.com) table into its session record. It reads four inputs: the
 [Craig](https://craig.chat) recording from Discord, the Foundry chat log,
-[Battle Flow](https://github.com/Txpple/fvtt-mod-battleflow)'s combat stats and the party's
-sheets. From them it writes a speaker-labelled transcript, a player recap (email and PDF), a
+[By the Books](https://github.com/Txpple/fvtt-mod-battleflow)' combat stats (Battle Flow before
+its 3.0.0 rename; cards from either are read) and the party's sheets. From them it writes a speaker-labelled transcript, a player recap (email and PDF), a
 combat report, GM notes and a party snapshot into your campaign repo.
 
 [Claude Code](https://claude.com/claude-code) drives it. The server is registered as
@@ -55,7 +55,7 @@ Then, once per machine:
   Assistant GM user in the world. The `fvtt-mcp-dnd5e` bridge's own Assistant GM user will do
   (copy its `FOUNDRY_USER` / `FOUNDRY_PASSWORD`), so no extra user is needed; a separate Assistant
   GM user works too. Sharing the bridge's user is safe while the DM is connected as Gamemaster:
-  Foundry elects the highest-role GM, so the shared user never runs Battle Flow's GM-only
+  Foundry elects the highest-role GM, so the shared user never runs By the Books' GM-only
   automation, and a read is refused if the scribe's user is the elected GM during a combat. If
   `FOUNDRY_SCRIBE_USER` names no user in the world, a read fails at the join, naming it and
   listing the world's users.
@@ -94,7 +94,7 @@ default host for reads, and each read tool can override it per call. The host UR
 - `fvtt-mcp-dnd5e`, built, beside this repo.
 - Microsoft Edge, for the PDFs.
 - An NVIDIA GPU for transcription. The CPU works, but slower.
-- A dnd5e world. Battle Flow is needed only for the combat report.
+- A dnd5e world. By the Books (or Battle Flow 2.x) is needed only for the combat report.
 - The Craig bot in your Discord server.
 - A campaign repo: `campaign.json` + `STYLE.md`, as described in
   [`campaign-repo.md`](https://github.com/Txpple/fvtt-mcp-dnd5e/blob/main/.claude/skills/_shared/campaign-repo.md).
@@ -135,7 +135,7 @@ records below show the result.
 | `transcribe-recording` | runs faster-whisper on each track → `transcript-segments.json`. Runs as a job and resumes after a crash |
 | `export-session-chat` | exports the recording window's chat log → `chatlog.json`, with whispers and blind rolls marked |
 | `build-transcript` | merges speech and chat by wall clock → `transcript.md` and `transcript-public.md` (whispers withheld) |
-| `analyze-combat` | turns Battle Flow's stat stamps into per-combat damage, accuracy, healing, spends and moments |
+| `analyze-combat` | turns By the Books' stat stamps (Battle Flow's too) into per-combat damage, accuracy, healing, spends and moments |
 | `snapshot-party` | exports the party's sheets in full (restorable with Import Data), plus the digest facts |
 | `render-pdf` | prints the outputs' HTML to PDF with headless Edge, and saves every page as a JPEG to check |
 

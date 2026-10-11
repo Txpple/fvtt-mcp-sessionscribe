@@ -3,15 +3,15 @@
  * src/tools/combat-stats.ts (get-combat-stats, retired there by the 2026-09-23 break-out), and
  * grown here since: the 2026-09-01 / 2026-09-05 families (the gate's reminders, chips spent,
  * damage shields, the maneuver / cast / emanation moments).
- * Fold Battle Flow's stat-stamped chat messages into a per-combat ledger and render the
- * reports: damage dealt/taken, healing + overheal, verdict-flip credits, spend economy (pools
+ * Fold By the Books' (Battle Flow's until 3.0.0) stat-stamped chat messages into a per-combat
+ * ledger and render the reports: damage dealt/taken, healing + overheal, verdict-flip credits, spend economy (pools
  * AND slots), buff-die (Bless) margins, and session flavor (nat 20s/1s, advantage economy,
  * death saves).
  *
  * The scan is page-side (src/page/combat-stats.ts, run by the reader child — read-only, one
  * sweep); everything below is plain Node over the returned JSON, exported pure so the unit
  * tests pin the arithmetic:
- * reverts subtracted (battleflow ruling R-B), explicit-null combat = "out of combat" vs ABSENT
+ * reverts subtracted (the module's ruling R-B), explicit-null combat = "out of combat" vs ABSENT
  * = pre-plane legacy (excluded but counted), healing as negative `taken` with
  * overheal = rolled − applied, synthetic token actors aggregated by archetype name.
  *
@@ -82,7 +82,7 @@ export interface ActorAgg {
   /** clock riders that rode this attacker's hits (Dreadful Strike, Divine Strike …), by name.
    *  Their damage is already in `dealt`, through the receipt. */
   riders: Record<string, number>;
-  /** Fighting Styles that CHANGED this attacker's damage rolls (Battle Flow's `fightingStyle`,
+  /** Fighting Styles that CHANGED this attacker's damage rolls (By the Books' `fightingStyle`,
    *  2026-09-26), by name: how many rolls, and the damage the style ADDED (Great Weapon Fighting's
    *  raised dice, Thrown's and Dueling's +2, Two-Weapon's modifier). The damage itself is already
    *  in `dealt`, through the receipt; `gain` says how much of it the style was. */
@@ -254,11 +254,11 @@ export function foldCombatLedger(scan: any): CombatLedger {
         // dealt-by-type meter; against the message rolls (pre-mitigation) they yield what the
         // target's traits denied (resist/immune, a modification) or invited (vulnerable).
         //
-        // The entry's `multiplier` is the SAVE's (or a reaction's) halving, passed by Battle
-        // Flow into calculateDamage, so the expected part without traits is roll × multiplier,
+        // The entry's `multiplier` is the SAVE's (or a reaction's) halving, passed by By the
+        // Books into calculateDamage, so the expected part without traits is roll × multiplier,
         // and the traits' share is what is left. The entry's `traits[]` label is NOT consulted:
-        // dnd5e folds that same multiplier into the per-part `active.multiplier` that Battle
-        // Flow reads the label from, so on a halved save "saved, no resistance" is labelled
+        // dnd5e folds that same multiplier into the per-part `active.multiplier` that By the
+        // Books reads the label from, so on a halved save "saved, no resistance" is labelled
         // resistant and "saved and resistant" (× 0.25) gets no label at all (session 8's dragon
         // breath, 2026-09-24: Gren 32 → 8 unlabelled, Morgash 32 → 16 "resistant"). The
         // arithmetic is right in both cases. Sub-point rounding noise is ignored.

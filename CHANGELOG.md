@@ -2,8 +2,22 @@
 
 What changed for a user of the tools and the skill, release by release. Dates are tag dates.
 
-## Unreleased
+## 1.3.0 — 2026-10-11 — reads By the Books, Battle Flow's new name
 
+- **Battle Flow is now By the Books** (its 3.0.0, package id `fvtt-mod-bythebooks`), and the
+  scribe reads both. `analyze-combat` takes each card's stamps from `flags["fvtt-mod-bythebooks"]`
+  and falls back to `flags["fvtt-mod-battleflow"]` on that same card, family by family: cards
+  written before a world upgraded keep the old scope forever (the module never migrates chat
+  messages), so one session's log can hold both and is folded as one. A table still on Battle
+  Flow 2.x reads as before.
+- The world probe's module field is now `bythebooks: { active, version, id }` (was
+  `battleflow: { active, version }`): By the Books if it is active, else Battle Flow if that is,
+  and `id` says which was found. `scribe-status { connect: true }` returns it under the new name.
+- Doctor, `verify-reader` and status lines name the module as `By the Books 3.0.0`, or
+  `Battle Flow 2.17.0 (now By the Books)` on a table that has not upgraded; `, inactive` when it
+  is installed but off. `analyze-combat`'s warning reads `By the Books is not installed in this
+  world: no stamps to fold`. Tool descriptions, the skill, the combat-log template and the docs
+  say By the Books.
 - `.mcp.json.example` shows `FVTT_MCP_ENV`: a hosted world whose connection lives in its own fvtt-mcp-dnd5e env file needs it in the scribe's registration too, or molten reads fall back to `../fvtt-mcp-dnd5e/.env`.
 
 ## 1.2.1 — 2026-10-10 — the scribe may join as the bridge's Assistant GM user

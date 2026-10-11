@@ -15,7 +15,7 @@ const PROBE: WorldProbe = {
   activeGM: { name: 'Gamemaster', isSelf: false },
   gmsConnected: [{ name: 'Gamemaster', role: 4 }],
   combatActive: false,
-  battleflow: { active: true, version: '2.16.2' },
+  bythebooks: { active: true, version: '3.0.0', id: 'fvtt-mod-bythebooks' },
   messageCount: 12,
 };
 
@@ -68,6 +68,7 @@ describe('doctor', () => {
       expect(r.lines.every(l => l.mark === 'ok')).toBe(true);
       expect(r.text).toContain('✓ FOUNDRY_HOST=local → http://localhost:30000 (world lost-mine)');
       expect(r.text).toContain('"Scribe Assistant" is on /join and joined lost-mine');
+      expect(r.text).toContain('dnd5e 6.0.6, By the Books 3.0.0); hung up');
       expect(r.text).toContain('role 3 (Assistant GM)');
       expect(r.text).toContain('names the joined world lost-mine');
       expect(asked).toEqual({ op: 'probe', host: 'local', timeoutMs: 90_000 });

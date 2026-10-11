@@ -28,12 +28,12 @@ the world and **writes the record**; it never writes to Foundry.
 
 | Tool | Does |
 | --- | --- |
-| `scribe-status` | Health (Python + CUDA, ffmpeg, tar, Edge, the campaign repo, the scribe's login); `connect: true` proves the login and names the world, the GMs connected and Battle Flow; per session, which outputs, pipeline files and snapshot exist; `date` + `waitSeconds` follows a session's jobs. |
+| `scribe-status` | Health (Python + CUDA, ffmpeg, tar, Edge, the campaign repo, the scribe's login); `connect: true` proves the login and names the world, the GMs connected and By the Books (or Battle Flow 2.x); per session, which outputs, pipeline files and snapshot exist; `date` + `waitSeconds` follows a session's jobs. |
 | `fetch-recording` | The Craig link (or the DM's own flac zip, `zipPath`) → `audio/tracks/` + `craig-info.json` (never the key). A job. |
 | `transcribe-recording` | Per-speaker faster-whisper → `transcript-segments.json`. A job; resumes after a crash. |
 | `export-session-chat` | The recording window's chat log → `chatlog.json`, whispers and blind rolls marked. |
 | `build-transcript` | → `transcript.md` (everything, 🤫 for whispers) and `transcript-public.md` (whispers withheld). |
-| `analyze-combat` | Battle Flow's stat stamps → the per-combat report (GM-facing numbers). |
+| `analyze-combat` | By the Books' stat stamps (Battle Flow's on older cards) → the per-combat report (GM-facing numbers). |
 | `snapshot-party` | The party's sheets → `<snapshots.dir>/<date>/<PC>.json` + the digest facts. |
 | `render-pdf` | The outputs' HTML → PDFs (recap.pdf from recap-print.html), page counts, every page as a JPEG to look at. |
 
@@ -98,7 +98,7 @@ Let `date` be the session's real date (`YYYY-MM-DD`).
    verify the skew: find a moment the DM says a roll aloud ("make a dex save") and compare its
    speech time with the roll's; past ~5 s, set `sessions.skewSeconds` in `campaign.json` and
    rebuild.
-5. **Combat** — `analyze-combat { date }` (a world without Battle Flow says so in the first line:
+5. **Combat** — `analyze-combat { date }` (a world without By the Books says so in the first line:
    skip the combat log then). `includeLedger: true` when you need to trace a number. Each actor's
    moments also carry:
    - the gate's reminders, on attacks and on saves: the net it named, rolls made against it,

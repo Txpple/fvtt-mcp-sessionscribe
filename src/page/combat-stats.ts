@@ -1,9 +1,16 @@
-// Page-side: the combat-stats SCAN — one read-only sweep of game.messages for Battle Flow's
-// stat stamps plus the raw d20 rolls the buff-margin and advantage meters need.
+// Page-side: the combat-stats SCAN — one read-only sweep of game.messages for By the Books' stat
+// stamps (Battle Flow until its 3.0.0 rename) plus the raw d20 rolls the buff-margin and
+// advantage meters need.
 //
-// THE READ CONTRACT is fvtt-mod-battleflow's ARCHITECTURE.md §4 "The data plane — stat stamps".
+// THE READ CONTRACT is fvtt-mod-bythebooks' ARCHITECTURE.md §4 "The data plane — stat stamps".
 // The flags are read as an EXTERNAL WIRE FORMAT (a data contract, not a code dependency — user
-// constraint 2026-08-27): nothing here imports battleflow. Contract essentials:
+// constraint 2026-08-27): nothing here imports the module. Contract essentials:
+//   • TWO SCOPES, one shape. By the Books 3.0.0 (renamed from Battle Flow, 2026-10-11) stamps new
+//     cards under `flags["fvtt-mod-bythebooks"]`; every card written before a world upgraded, and
+//     every card a table still on Battle Flow 2.x writes, keeps `flags["fvtt-mod-battleflow"]`
+//     forever (the module never migrates chat messages). One session's log can hold both, so the
+//     scope is chosen PER MESSAGE, not per world: `stampScope` reads the new scope first and
+//     falls back to the old on that same message, family by family.
 //   • every stamped record carries `combat` ("combatId:round:turn", null = out of combat) and
 //     `sourceUuid` (null = no honest source); an ABSENT field marks a pre-plane legacy record —
 //     never conflate absent with explicit null.
@@ -18,7 +25,20 @@
 // READ-ONLY by design: no writes, no settings, no fixtures — safe beside a live session.
 // The scan returns raw JSON; all folding happens Node-side so it is unit-testable.
 
-const BF_MOD = 'fvtt-mod-battleflow';
+const BTB_MOD = 'fvtt-mod-bythebooks';
+const LEGACY_BF_MOD = 'fvtt-mod-battleflow';
+
+/**
+ * One message's stamps: By the Books' scope first, Battle Flow's as the fallback on the same
+ * message. Both present (an old card touched after the upgrade) merges family by family, the new
+ * scope winning; neither is undefined.
+ */
+export function stampScope(flags: any): Record<string, any> | undefined {
+  const fresh = flags?.[BTB_MOD];
+  const legacy = flags?.[LEGACY_BF_MOD];
+  if (fresh && legacy) return { ...legacy, ...fresh };
+  return fresh ?? legacy ?? undefined;
+}
 // Families folded from `stamped`: the contract table's stamped flags. rollCtx and combatRoster
 // are deliberately NOT here: rollCtx rides the d20 entries (its message IS the roll), and
 // combatRoster feeds `rosters`.
@@ -150,7 +170,7 @@ export async function scanCombatStats(args: ScanCombatStatsArgs = {}) {
 
   for (const m of game.messages.contents) {
     if (m.timestamp < since || m.timestamp > until) continue;
-    const bf = m.flags?.[BF_MOD];
+    const bf = stampScope(m.flags);
     // combatRoster: the GM-whispered marker card — the turn→actor map that outlives deletion
     if (bf?.combatRoster) rosterFlags.push(JSON.parse(JSON.stringify(bf.combatRoster)));
     if (bf && BF_KEYS.some(k => bf[k])) {
@@ -172,7 +192,7 @@ export async function scanCombatStats(args: ScanCombatStatsArgs = {}) {
       });
     }
     // Buff margins, nat 20/1, advantage economy and death saves need the RAW d20 rolls — a
-    // buff die rides the roll as its own term, on messages battleflow may never touch.
+    // buff die rides the roll as its own term, on messages By the Books may never touch.
     const rollType = messageRollType(m);
     if (m.rolls?.length && rollType && D20_TYPES.has(rollType)) {
       const r = m.rolls[0];
@@ -185,7 +205,7 @@ export async function scanCombatStats(args: ScanCombatStatsArgs = {}) {
         actorUuid: m.speaker?.actor ? `Actor.${m.speaker.actor}` : null,
         speakerAlias: m.speaker?.alias ?? null,
         itemUuid: messageItemUuid(m),
-        // rollCtx: battleflow's at-roll-time context stamp — {combat, sourceUuid}
+        // rollCtx: By the Books' at-roll-time context stamp — {combat, sourceUuid}
         ctx: bf?.rollCtx ? JSON.parse(JSON.stringify(bf.rollCtx)) : null,
         // advantageMode: dnd5e's own -1 | 0 | 1; `all` keeps both dice for adv/dis outcomes
         adv: r.options?.advantageMode ?? null,

@@ -9,7 +9,7 @@
 //      messages, actors, world items, combats and scenes (counts + the newest _stats.modifiedTime)
 //      is identical at connect and 30 s later. Run it with NO other GM connected (disconnect the
 //      MCP bridge with its disconnect-bridge tool first): that is the case where the scribe is the
-//      elected GM, and Battle Flow's GM-only code would run on its page if anything triggered it.
+//      elected GM, and By the Books' GM-only code would run on its page if anything triggered it.
 //      A write at `ready` predates that first fingerprint, so nothing may be newer than the join.
 //
 //   FOUNDRY_HOST=local node scripts/verify-reader.mjs
@@ -18,6 +18,7 @@ import { execFileSync } from 'node:child_process';
 import * as path from 'node:path';
 import { loadCampaign } from '../dist/campaign.js';
 import { config, repoRoot } from '../dist/config.js';
+import { rulesModuleLabel } from '../dist/foundry/protocol.js';
 import { childReader } from '../dist/foundry/read.js';
 import { openScribeSession } from '../dist/foundry/session.js';
 
@@ -56,7 +57,7 @@ if (reply.ok) {
   const p = reply.probe;
   console.log(
     `      as "${p.user.name}" (role ${p.user.role}) · GMs connected: ${p.gmsConnected.map(g => g.name).join(', ')}` +
-      ` · elected: ${p.activeGM?.name ?? 'none'} · Battle Flow ${p.battleflow?.version ?? 'absent'}`
+      ` · elected: ${p.activeGM?.name ?? 'none'} · ${rulesModuleLabel(p.bythebooks)}`
   );
 }
 await new Promise(r => setTimeout(r, 5_000)); // let the server notice the socket closing

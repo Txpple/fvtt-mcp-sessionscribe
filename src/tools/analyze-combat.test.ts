@@ -42,7 +42,9 @@ const SCAN = {
   rosters: {},
 };
 
-const PROBE = { battleflow: { active: true, version: '1.0.0' } } as WorldProbe;
+const PROBE = {
+  bythebooks: { active: true, version: '3.0.0', id: 'fvtt-mod-bythebooks' },
+} as WorldProbe;
 
 const roots: string[] = [];
 function setup(files: Record<string, string | object> = {}) {
@@ -130,16 +132,18 @@ describe('analyze-combat', () => {
     await expect(tool.handleAnalyzeCombat({})).rejects.toThrow(/connected to world "other"/);
   });
 
-  it('says so when the world has no Battle Flow to stamp anything', async () => {
+  it('says so when the world has no By the Books to stamp anything', async () => {
     const { tool, setReply } = setup();
     setReply({
       ok: true,
       host: 'local',
-      probe: { battleflow: null } as WorldProbe,
+      probe: { bythebooks: null } as WorldProbe,
       result: { ...SCAN, stamped: [] },
     });
     const out = await tool.handleAnalyzeCombat({});
-    expect(out.split('\n')[0]).toContain('Battle Flow is not installed');
+    expect(out.split('\n')[0]).toContain(
+      'By the Books is not installed in this world: no stamps to fold'
+    );
   });
 });
 
