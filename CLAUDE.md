@@ -15,7 +15,7 @@ the campaign repo:
 It **reads the world and never writes it**. The session-diary page and the bestiary are authored
 through `fvtt-mcp-dnd5e`.
 
-**State (2026-10-11).** At **1.3.0** (2026-10-11, committed, not yet tagged or pushed): it reads
+**State (2026-10-11).** At **1.3.0** (released 2026-10-11): it reads
 By the Books, Battle Flow's new name from its 3.0.0 (package id `fvtt-mod-bythebooks`,
 Txpple/fvtt-mod-bythebooks#6). The scan reads each card's stamps from the new flag scope and
 falls back to `fvtt-mod-battleflow` on that same card, since pre-upgrade cards keep the old scope
@@ -26,8 +26,10 @@ still resolves; the campaign repos are `../../fvtt-campaign-*`). The server key 
 `sessionscribe` since 2026-10-10 (was `scribe`; tools are `mcp__sessionscribe__*`); **1.1.0**
 added the setup checks, **1.2.0** `npm run doctor` and `npm run install-skill`, **1.2.1** the
 bridge's Assistant GM user as the scribe's login. The campaign it was built for concluded with
-session 9 (2026-09-29). Pending: the 1.3.0 tag and push; a live read of a 3.0.0 card on the
-sandbox once By the Books is installed there.
+session 9 (2026-09-29). The reader gate (`scripts/verify-reader.mjs`) passed live on the sandbox
+with By the Books 3.0.0 on 2026-10-11 (the probe names it; an idle scribe as the elected GM changed
+nothing). Not yet read live: a 3.0 card's stamps under the new scope (the unit tests cover both
+scopes); the next session with combat on a 3.0 world is the first real one.
 [NEXT-SESSION.md](NEXT-SESSION.md) is the handoff's history and the hard-won lessons;
 [CHANGELOG.md](CHANGELOG.md) is the release record.
 Broken out of `fvtt-mcp-dnd5e` by owner ruling (reversing that repo's 3.0 decisions #16 and
