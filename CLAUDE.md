@@ -17,7 +17,7 @@ through `fvtt-mcp-dnd5e`.
 
 **State (2026-10-11).** At **1.3.0** (2026-10-11, committed, not yet tagged or pushed): it reads
 By the Books, Battle Flow's new name from its 3.0.0 (package id `fvtt-mod-bythebooks`,
-Txpple/fvtt-mod-battleflow#6). The scan reads each card's stamps from the new flag scope and
+Txpple/fvtt-mod-bythebooks#6). The scan reads each card's stamps from the new flag scope and
 falls back to `fvtt-mod-battleflow` on that same card, since pre-upgrade cards keep the old scope
 forever; the probe reports `bythebooks { active, version, id }`, preferring the new id and
 falling back to a table still on 2.x. Released as **1.0.0** on 2026-09-30; renamed from

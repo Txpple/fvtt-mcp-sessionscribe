@@ -5,7 +5,7 @@
 An [MCP](https://modelcontextprotocol.io) server that turns a night at a **D&D 5e**
 [Foundry VTT](https://foundryvtt.com) table into its session record. It reads four inputs: the
 [Craig](https://craig.chat) recording from Discord, the Foundry chat log,
-[By the Books](https://github.com/Txpple/fvtt-mod-battleflow)' combat stats (Battle Flow before
+[By the Books](https://github.com/Txpple/fvtt-mod-bythebooks)' combat stats (Battle Flow before
 its 3.0.0 rename; cards from either are read) and the party's sheets. From them it writes a speaker-labelled transcript, a player recap (email and PDF), a
 combat report, GM notes and a party snapshot into your campaign repo.
 
