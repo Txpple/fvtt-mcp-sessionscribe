@@ -74,8 +74,19 @@ if ($staleBackups) {
     $staleBackups | ForEach-Object { Write-Host "      $($_.FullName)" }
 }
 
-Write-Host '== Installing faster-whisper + CUDA wheels (idempotent; ~1.3 GB first time) =='
-uv pip install --python $py faster-whisper nvidia-cublas-cu12 nvidia-cudnn-cu12
+# av<19: PyAV 19 dropped av.open()'s metadata_errors, which faster-whisper 1.2.1 still passes
+# (every transcription fails at the audio decode; seen 2026-10-11).
+# The CUDA wheels only on a machine with an NVIDIA GPU: without one they are ~1.3 GB never loaded,
+# and the worker falls back to CPU int8 either way.
+$nvidia = Get-CimInstance Win32_VideoController -ErrorAction SilentlyContinue |
+    Where-Object { $_.Name -match 'NVIDIA' }
+if ($nvidia) {
+    Write-Host '== Installing faster-whisper + CUDA wheels (idempotent; ~1.3 GB first time) =='
+    uv pip install --python $py faster-whisper 'av<19' nvidia-cublas-cu12 nvidia-cudnn-cu12
+} else {
+    Write-Host '== Installing faster-whisper (no NVIDIA GPU: CPU only, no CUDA wheels) =='
+    uv pip install --python $py faster-whisper 'av<19'
+}
 
 $clip = "$home_\.session-scribe\test_speech.wav"
 if (-not (Test-Path $clip)) {
@@ -87,7 +98,7 @@ if (-not (Test-Path $clip)) {
     $s.Dispose()
 }
 
-Write-Host '== Smoke test (loads tiny model; verifies CUDA stack) =='
+Write-Host '== Smoke test (loads tiny model; verifies the CUDA stack where there is one) =='
 & $py "$PSScriptRoot\..\worker\transcribe.py" smoke $clip
 if ($LASTEXITCODE -ne 0) { throw 'Smoke test failed - see output above.' }
 

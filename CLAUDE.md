@@ -198,6 +198,9 @@ junctions it to `~/.claude/skills/session-scribe`, so it loads in any project.
   ImportError). The fix is a venv on a signed python.org install. Never touch the policy itself.
 - **ctranslate2 needs the pip-installed NVIDIA `bin` directories on `PATH`;**
   `add_dll_directory` alone is not enough. The worker handles it.
+- **`setup.ps1` pins `av<19`** (PyAV 19 dropped the `metadata_errors` argument faster-whisper 1.2.1
+  passes) and installs the CUDA wheels only when `Win32_VideoController` names an NVIDIA GPU; on
+  any other machine the worker runs CPU int8 (2026-10-11).
 - **Python on Windows writes text files as CRLF,** and the port writes LF. Compare line by line
   with `\r?\n`.
 - **Craig recordings expire after 7 days** (the page says 14; the API is right). The DM's own
