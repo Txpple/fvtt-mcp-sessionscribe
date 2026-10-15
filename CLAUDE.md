@@ -15,33 +15,28 @@ the campaign repo:
 It **reads the world and never writes it**. The session-diary page and the bestiary are authored
 through `fvtt-mcp-dnd5e`.
 
-**State (2026-10-11).** At **1.3.0** (released 2026-10-11): it reads
-By the Books, Battle Flow's new name from its 3.0.0 (package id `fvtt-mod-bythebooks`,
-Txpple/fvtt-mod-bythebooks#6). The scan reads each card's stamps from the new flag scope and
-falls back to `fvtt-mod-battleflow` on that same card, since pre-upgrade cards keep the old scope
-forever; the probe reports `bythebooks { active, version, id }`, preferring the new id and
-falling back to a table still on 2.x. Released as **1.0.0** on 2026-09-30; renamed from
-`fvtt-app-sessionscribe` and moved under the suite folder on 2026-10-08 (`../fvtt-mcp-dnd5e`
-still resolves; the campaign repos are `../../fvtt-campaign-*`). The server key is
-`sessionscribe` since 2026-10-10 (was `scribe`; tools are `mcp__sessionscribe__*`); **1.1.0**
-added the setup checks, **1.2.0** `npm run doctor` and `npm run install-skill`, **1.2.1** the
-bridge's Assistant GM user as the scribe's login. The campaign it was built for concluded with
-session 9 (2026-09-29). The reader gate (`scripts/verify-reader.mjs`) passed live on the sandbox
-with By the Books 3.0.0 on 2026-10-11 (the probe names it; an idle scribe as the elected GM changed
-nothing). Not yet read live: a 3.0 card's stamps under the new scope (the unit tests cover both
-scopes); the next session with combat on a 3.0 world is the first real one.
-[NEXT-SESSION.md](NEXT-SESSION.md) is the handoff's history and the hard-won lessons;
-[CHANGELOG.md](CHANGELOG.md) is the release record.
-Broken out of `fvtt-mcp-dnd5e` by owner ruling (reversing that repo's 3.0 decisions #16 and
-#17). All eight tools and the skill have landed.
+**State (2026-10-15).** At **1.3.0**, released: it reads By the Books, Battle Flow's new name from
+its 3.0.0 (package id `fvtt-mod-bythebooks`, Txpple/fvtt-mod-bythebooks#6). The scan reads each
+card's stamps from the new flag scope and falls back to `fvtt-mod-battleflow` on that same card,
+since pre-upgrade cards keep the old scope forever; the probe reports `bythebooks { active,
+version, id }`, preferring the new id and falling back to a table still on 2.x. `main` carries
+unreleased work past 1.3.0 (CHANGELOG's Unreleased): `analyze-combat` folds 53 By the Books
+families, names the ones it skipped, and is tested against By the Books' contract. The reader gate
+(`scripts/verify-reader.mjs`) passed live on the sandbox with By the Books 3.0.0 (the probe names
+it; an idle scribe as the elected GM changed nothing). Not yet read live: a 3.0 card's stamps
+under the new scope (the unit tests cover both scopes); the next session with combat on a 3.0
+world is the first real one. [CHANGELOG.md](CHANGELOG.md) is the release record,
+[NEXT-SESSION.md](NEXT-SESSION.md) the handoff's history and the hard-won lessons, `docs/log/` the
+dated journal. Broken out of `fvtt-mcp-dnd5e` by owner ruling (reversing that repo's 3.0 decisions
+#16 and #17). All eight tools and the skill have landed.
 - **Proven:**
   - build-transcript: parity on the 9 real sessions.
-  - fetch-recording: the real 2026-09-22 zip, and the **Craig link** (2026-09-24, session 8
-    replayed end to end on prod into a scratch clone).
+  - fetch-recording: a real session's zip, and the **Craig link** (session 8 replayed end to end
+    on prod into a scratch clone).
   - transcribe-recording: on CUDA, resume included.
-  - render-pdf: 2026-09-22's four PDFs, and their page images (2026-09-24).
-- **Proven live on the sandbox, as Scribe Assistant** (a separate user then; the scribe joins as
-  the bridge's user since 2026-10-10):
+  - render-pdf: a real session's four PDFs, and their page images.
+- **Proven live on the sandbox, as Scribe Assistant** (a separate user then; the scribe now joins
+  as the bridge's user):
   - the reader's gate `scripts/verify-reader.mjs`;
   - parity with the MCP for analyze-combat, export-session-chat and snapshot-party.
 - **Retired:** the MCP's copies went in `fvtt-mcp-dnd5e` 4.0.0 (`get-combat-stats`, the
@@ -93,13 +88,13 @@ powershell -ExecutionPolicy Bypass -File scripts\setup.ps1 -PrefetchModel   # tr
 - The worker uses `src/foundry/session.ts`, shared with the parity scripts:
   - It joins as `FOUNDRY_SCRIBE_USER` / `FOUNDRY_SCRIBE_PASSWORD` (both required), with the
     admin key stripped. On the house worlds that is the bridge's own Assistant GM user
-    (`Assistant DM`), by owner ruling 2026-10-10, to stop user bloat; a separate Assistant GM
+    (`Assistant DM`), by owner ruling, to stop user bloat; a separate Assistant GM
     user also works. Why sharing is safe: By the Books' single-applier check is
     `game.users.activeGM?.isSelf`, per user, so two clients on one user would both apply, but
     only while that user is the elected GM. Foundry elects the highest-role active GM, so with
     the DM (Gamemaster) connected the Assistant GM user is never elected, and
     `protocol.refusal()` refuses a read when the joined user is the elected GM while a combat
-    runs, which covers the bridge too. Verified on the sandbox 2026-10-10: the scribe joined as
+    runs, which covers the bridge too. Verified on the sandbox: the scribe joined as
     the bridge's user while the bridge was connected, hung up, and the bridge stayed connected.
   - The join is `fvtt-mcp-dnd5e`'s client; when it fails on a user not in the world,
     `protocol.scribeUserMissing()` rewrites the error to name `FOUNDRY_SCRIBE_USER`, list the
@@ -184,7 +179,7 @@ junctions it to `~/.claude/skills/session-scribe`, so it loads in any project.
     does not override a set variable.
   - A replay reads prod exactly as a real session does, and writes nothing to the world.
 - **A user's first join to a world runs modules' first-run writes.** Dice So Nice whispers a
-  welcome and sets a user flag. Scribe Assistant's first prod join did this (2026-09-24 01:19Z).
+  welcome and sets a user flag. Scribe Assistant's first prod join did this.
   It happens once per user per world, so `verify-reader` can't see it after the first time.
 
 ## Family conventions (shared across Open Roll 5e)
@@ -194,7 +189,7 @@ junctions it to `~/.claude/skills/session-scribe`, so it loads in any project.
 - **Tools do, skills decide.** Correctness goes in tested code; judgment (recap voice, which beats
   are memorable, curation) stays in the skill.
 - Commit directly to `main` and push. MIT license, author Txpple. The remote is
-  `Txpple/fvtt-mcp-sessionscribe`, **public** since 2026-09-24 (the owner's call), like the
+  `Txpple/fvtt-mcp-sessionscribe`, **public** (the owner's call), like the
   rest of Open Roll 5e. Issues from outside are accepted; pull requests are not.
 
 ## Machine gotchas (Windows)
@@ -211,7 +206,7 @@ junctions it to `~/.claude/skills/session-scribe`, so it loads in any project.
   `add_dll_directory` alone is not enough. The worker handles it.
 - **`setup.ps1` pins `av<19`** (PyAV 19 dropped the `metadata_errors` argument faster-whisper 1.2.1
   passes) and installs the CUDA wheels only when `Win32_VideoController` names an NVIDIA GPU; on
-  any other machine the worker runs CPU int8 (2026-10-11).
+  any other machine the worker runs CPU int8.
 - **Python on Windows writes text files as CRLF,** and the port writes LF. Compare line by line
   with `\r?\n`.
 - **Craig recordings expire after 7 days** (the page says 14; the API is right). The DM's own
