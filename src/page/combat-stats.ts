@@ -39,11 +39,14 @@ export function stampScope(flags: any): Record<string, any> | undefined {
   if (fresh && legacy) return { ...legacy, ...fresh };
   return fresh ?? legacy ?? undefined;
 }
-// Families folded from `stamped`: the contract table's stamped flags. rollCtx and combatRoster
-// are deliberately NOT here: rollCtx rides the d20 entries (its message IS the roll), and
-// combatRoster feeds `rosters`.
-// castApply is left out too: its `choice` is unstamped by ruling (owner, 2026-09-23; the effect
-// it picks is stamped in effectReceipt), so reading it would count every cast card as legacy.
+// Families folded from `stamped`: every key By the Books writes on a chat card that records
+// something that HAPPENED at the table, stamped with who and when (its contracts/card-flags.json:
+// `stamp`). The 28 the contract table named first, then (2026-10-15, the suite's contract pass)
+// every other moment record that is a consequence or a use, so per-actor moments and spends are no
+// longer under-counted. rollCtx and combatRoster are deliberately NOT here: rollCtx rides the d20
+// entries (its message IS the roll), and combatRoster feeds `rosters`. The families left out on
+// purpose are SKIPPED_FAMILIES, each with its reason; the scan counts what it skipped and the
+// report says so.
 export const BF_KEYS = [
   'receipt',
   'effectReceipt',
@@ -77,7 +80,57 @@ export const BF_KEYS = [
   'emanationCard',
   // 2026-09-26: a Fighting Style's number on a damage roll
   'fightingStyle',
+  // 2026-10-15, the moment records the scan had missed (By the Books' contracts/card-flags.json)
+  // ... the maneuvers and riders that rode a hit
+  'hitManeuver',
+  'commandRide',
+  'sweepCard',
+  'sneakDamage',
+  'spellRiderCard',
+  // ... a reaction or an offer answered
+  'damageHold',
+  'dropToOne',
+  'deathSaveOffer',
+  'rebuke',
+  'bystanderRoll',
+  'initiativeSwap',
+  'initiativeGrant',
+  'conditionEnd',
+  'grappleDamage',
+  'kitTend',
+  'restSong',
+  // ... the dice changed after the roll
+  'diceChange',
+  'healReroll',
+  // ... a summon, a transformation, metamagic
+  'summon',
+  'transform',
+  'metamagic',
+  // ... a pool, a chip or a coating spent
+  'poolSpend',
+  'useChip',
+  'coatUse',
+  'coatHit',
+  'cardChip',
 ];
+
+/**
+ * By the Books' families the scan reads past on purpose, each with why: a decision whose
+ * consequence another family stamps, sheet upkeep at a rest, or a record with no stamp. The scan
+ * counts every family it skipped (these and any it does not know) and the report names them.
+ */
+export const SKIPPED_FAMILIES: Record<string, string> = {
+  castApply: 'a decision, unstamped by ruling; the effect it picks is in effectReceipt',
+  areaChoice: 'a decision: who the area affects; the saves and effects are stamped where they land',
+  typePick: 'a decision: the damage type; the damage is in the receipt',
+  masteryPick: 'a decision: which mastery; the mastery record is the resolve',
+  masterySwap: 'sheet upkeep at a long rest, not play',
+  formSwap: 'sheet upkeep at a long rest, not play',
+  tacticalRefund: 'carries no stat stamp; the fold it refunds is in d20fold',
+};
+
+/** Keys read elsewhere than the families: the roll's own context and the combat roster. */
+const READ_ELSEWHERE = new Set(['rollCtx', 'combatRoster']);
 const D20_TYPES = new Set(['attack', 'save', 'ability', 'skill', 'tool', 'concentration', 'death']);
 
 export interface ScanCombatStatsArgs {
@@ -167,10 +220,18 @@ export async function scanCombatStats(args: ScanCombatStatsArgs = {}) {
   const stamped: any[] = [];
   const d20s: any[] = [];
   const rosterFlags: any[] = [];
+  // Every family on a card in range that the scan does not fold, counted by key with why
+  // (SKIPPED_FAMILIES, or a key this build does not know): the report says what it did not read.
+  const skipped: Record<string, { n: number; why: string }> = {};
 
   for (const m of game.messages.contents) {
     if (m.timestamp < since || m.timestamp > until) continue;
     const bf = stampScope(m.flags);
+    if (bf)
+      for (const k of skippedFamilies(bf)) {
+        skipped[k] ??= { n: 0, why: SKIPPED_FAMILIES[k] ?? 'not read by this build' };
+        skipped[k].n++;
+      }
     // combatRoster: the GM-whispered marker card — the turn→actor map that outlives deletion
     if (bf?.combatRoster) rosterFlags.push(JSON.parse(JSON.stringify(bf.combatRoster)));
     if (bf && BF_KEYS.some(k => bf[k])) {
@@ -297,6 +358,12 @@ export async function scanCombatStats(args: ScanCombatStatsArgs = {}) {
     names,
     combats,
     rosters,
+    skipped,
     totalMessages: game.messages.size,
   };
+}
+
+/** The families on one message's stamps the scan does not fold (neither BF_KEYS nor read elsewhere). */
+export function skippedFamilies(stamps: Record<string, any>): string[] {
+  return Object.keys(stamps).filter(k => !BF_KEYS.includes(k) && !READ_ELSEWHERE.has(k));
 }

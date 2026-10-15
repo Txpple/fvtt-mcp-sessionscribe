@@ -892,3 +892,56 @@ describe('foldCombatLedger: the 2026-09 families', () => {
     expect(renderCombatReport(scan, ledger, { sections: ['damage'] })).not.toContain('reminded');
   });
 });
+
+describe('foldCombatLedger: the moment records the scan had missed, and the families skipped', () => {
+  const stamped = (k: string, extra: Record<string, unknown> = {}, sourceUuid = 'Actor.A') => ({
+    [k]: { ...extra, combat: 'C1:2:0', sourceUuid },
+  });
+  const scan = {
+    world: 'test',
+    scannedAt: 0,
+    totalMessages: 6,
+    combats: { C1: 'Temple Fight' },
+    rosters: {},
+    names: { 'Actor.A': 'Aldric', 'Actor.B': 'Brenna' },
+    stamped: [
+      { id: 'm1', ts: 1, flags: stamped('hitManeuver', { picks: [{ key: 'trip' }] }) },
+      { id: 'm2', ts: 2, flags: stamped('sneakDamage', { dice: 3 }) },
+      { id: 'm3', ts: 3, flags: stamped('summon', { applied: true }, 'Actor.B') },
+      { id: 'm4', ts: 4, flags: stamped('hitManeuver', {}) },
+    ],
+    d20s: [],
+    skipped: {
+      castApply: {
+        n: 2,
+        why: 'a decision, unstamped by ruling; the effect it picks is in effectReceipt',
+      },
+      someNewKey: { n: 1, why: 'not read by this build' },
+    },
+  };
+  const ledger = foldCombatLedger(scan);
+
+  it('counts each one per record, per actor, in its combat', () => {
+    expect(ledger.combats.C1.actors['Actor.A'].moments).toEqual({ hitManeuver: 2, sneakDamage: 1 });
+    expect(ledger.combats.C1.actors['Actor.B'].moments).toEqual({ summon: 1 });
+    expect(ledger.combats.C1.rounds).toBe(2);
+    expect(ledger.legacy).toBe(0);
+  });
+
+  it('carries the families skipped, and the report names them with why', () => {
+    expect(ledger.skipped).toEqual(scan.skipped);
+    const report = renderCombatReport(scan, ledger);
+    expect(report).toContain(
+      'families skipped: castApply on 2 cards (a decision, unstamped by ruling; the effect it picks is in effectReceipt); someNewKey on 1 card (not read by this build)'
+    );
+  });
+
+  it('a scan with nothing skipped prints no such line; an older scan with bare counts still reads', () => {
+    expect(
+      renderCombatReport({ ...scan, skipped: {} }, foldCombatLedger({ ...scan, skipped: {} }))
+    ).not.toContain('families skipped');
+    expect(foldCombatLedger({ ...scan, skipped: { x: 3 } }).skipped).toEqual({
+      x: { n: 3, why: 'not read by this build' },
+    });
+  });
+});

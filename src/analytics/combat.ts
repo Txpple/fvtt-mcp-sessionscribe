@@ -95,6 +95,8 @@ export interface ActorAgg {
 export interface CombatLedger {
   combats: Record<string, { rounds: number; actors: Record<string, ActorAgg> }>;
   legacy: number;
+  /** By the Books' families on the scanned cards that the fold does not read: how many cards, and why */
+  skipped: Record<string, { n: number; why: string }>;
   bless: Array<{
     kind: string;
     who: string;
@@ -115,6 +117,82 @@ export interface CombatLedger {
   /** decision latency under the clock: answeredAt vs the moment's own deadline/window */
   latency: Array<{ who: string; kind: string; ms: number }>;
 }
+
+/**
+ * The families folded by a section of their own (damage, healing, effects, spends, folds, the
+ * gate's reminders, chips, wards, riders, styles, auras, saves); the rest of the scan's families
+ * are COUNTED_FAMILIES. Together they are the scan's BF_KEYS (src/page/combat-stats.ts), which a
+ * unit test holds.
+ */
+export const FOLDED_FAMILIES = [
+  'receipt',
+  'effectReceipt',
+  'spend',
+  'd20fold',
+  'reminder',
+  'chipSpend',
+  'damageShield',
+  'clockRiders',
+  'fightingStyle',
+  'emanationCard',
+] as const;
+
+/**
+ * The families counted one per record (a moment: a use, an answer, a ride), per actor and per
+ * combat, by the record's own stamp (`combat`, `sourceUuid`). `saves` and `concentration` are also
+ * read for the saves made; a superiorityRide counts its dice.
+ */
+export const COUNTED_FAMILIES = [
+  'precision',
+  'mastery',
+  'bashOffer',
+  'riposte',
+  'topple',
+  'saves',
+  'hold',
+  'holdSkipped',
+  'volley',
+  'concentration',
+  // 2026-09-05, one per use: maneuvers, a ward raised, a bare damage cast, an emanation's
+  // heal (its healing is already in the receipt) or its turn reminder
+  'superiorityUse',
+  'superiorityRide',
+  'baitSwitch',
+  'command',
+  'shieldMark',
+  'damageCast',
+  'emanationHeal',
+  'emanationRemind',
+  // 2026-10-15, the moment records the scan had missed (By the Books' contracts/card-flags.json):
+  // the dice and riders that rode a hit, the reactions and offers answered, the dice changed after
+  // the roll, the summons and transformations, metamagic, the pools, chips and coatings spent
+  'hitManeuver',
+  'commandRide',
+  'sweepCard',
+  'sneakDamage',
+  'spellRiderCard',
+  'damageHold',
+  'dropToOne',
+  'deathSaveOffer',
+  'rebuke',
+  'bystanderRoll',
+  'initiativeSwap',
+  'initiativeGrant',
+  'conditionEnd',
+  'grappleDamage',
+  'kitTend',
+  'restSong',
+  'diceChange',
+  'healReroll',
+  'summon',
+  'transform',
+  'metamagic',
+  'poolSpend',
+  'useChip',
+  'coatUse',
+  'coatHit',
+  'cardChip',
+] as const;
 
 /** What this target actually TOOK — `taken` when recorded, else the pool's own movement. */
 export const takenOf = (e: any): number =>
@@ -335,28 +413,7 @@ export function foldCombatLedger(scan: any): CombatLedger {
       }
     }
 
-    for (const k of [
-      'precision',
-      'mastery',
-      'bashOffer',
-      'riposte',
-      'topple',
-      'saves',
-      'hold',
-      'holdSkipped',
-      'volley',
-      'concentration',
-      // 2026-09-05, one per use: maneuvers, a ward raised, a bare damage cast, an emanation's
-      // heal (its healing is already in the receipt) or its turn reminder
-      'superiorityUse',
-      'superiorityRide',
-      'baitSwitch',
-      'command',
-      'shieldMark',
-      'damageCast',
-      'emanationHeal',
-      'emanationRemind',
-    ]) {
+    for (const k of COUNTED_FAMILIES) {
       if (!F[k]) continue;
       const b = bucketOf(F[k]);
       if (b.legacy) {
@@ -657,7 +714,15 @@ export function foldCombatLedger(scan: any): CombatLedger {
       a.tokens = n; // Sets don't serialize; the count does
     }
   }
-  return { combats, legacy, bless, flavor, latency };
+  const skipped: CombatLedger['skipped'] = {};
+  for (const [k, s] of Object.entries(scan.skipped ?? {}) as Array<[string, any]>) {
+    // a scan from before the families were counted with a reason carries a bare count
+    skipped[k] =
+      typeof s === 'number'
+        ? { n: s, why: 'not read by this build' }
+        : { n: Number(s?.n) || 0, why: String(s?.why ?? '') };
+  }
+  return { combats, legacy, skipped, bless, flavor, latency };
 }
 
 /* --- the report (pure) ---------------------------------------------------------------------- */
@@ -684,6 +749,11 @@ export function renderCombatReport(
   );
   if (ledger.legacy)
     P(`_(${ledger.legacy} pre-plane legacy records excluded — the ledger starts 2026-08-27)_`);
+  const skipped = Object.entries(ledger.skipped ?? {}).sort((a, b) => b[1].n - a[1].n);
+  if (skipped.length)
+    P(
+      `_(families skipped: ${skipped.map(([k, s]) => `${k} on ${s.n} card${s.n === 1 ? '' : 's'} (${s.why})`).join('; ')})_`
+    );
 
   for (const [key, c] of Object.entries(ledger.combats)) {
     if (opts.combat && key !== opts.combat) continue;

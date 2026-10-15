@@ -166,6 +166,14 @@ Heart of Greenrest*, are published as examples in the suite repo:
   `audio/.jobs/`, so they never block the server.
 - **Timing.** Speech and chat are aligned by wall clock: Craig's `startTime` against Foundry's
   epoch-ms timestamps. There are no markers and no sync step.
+- **The combat report's read.** `analyze-combat` reads 54 of By the Books' flag families off the
+  chat cards (`BF_KEYS` in `src/page/combat-stats.ts`): every record of something that happened at
+  the table, stamped with who and when. A few are read past on purpose (a decision whose consequence
+  another family records, sheet upkeep at a rest, a record with no stamp), and the report ends its
+  header with a `families skipped` line naming every family it found and did not fold, with why. By
+  the Books records what it writes in its own repo (`contracts/card-flags.json`); the test
+  `src/page/combat-stats.contract.test.ts` holds the scan to that file from a clone beside this one,
+  and `contracts/consumes.json` names the version and the fields the fold touches.
 
 ## Development
 
