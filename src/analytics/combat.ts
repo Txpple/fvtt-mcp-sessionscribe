@@ -165,7 +165,8 @@ export const COUNTED_FAMILIES = [
   'emanationRemind',
   // 2026-10-15, the moment records the scan had missed (By the Books' contracts/card-flags.json):
   // the dice and riders that rode a hit, the reactions and offers answered, the dice changed after
-  // the roll, the summons and transformations, metamagic, the pools, chips and coatings spent
+  // the roll, the summons and transformations, metamagic, the chips and coatings spent (a pool spent
+  // by hand, poolSpend, carries no stamp: SKIPPED_FAMILIES)
   'hitManeuver',
   'commandRide',
   'sweepCard',
@@ -187,7 +188,6 @@ export const COUNTED_FAMILIES = [
   'summon',
   'transform',
   'metamagic',
-  'poolSpend',
   'useChip',
   'coatUse',
   'coatHit',

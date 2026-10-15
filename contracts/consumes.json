@@ -77,7 +77,6 @@
         "kitTend": ["combat", "sourceUuid"],
         "mastery": ["combat", "sourceUuid"],
         "metamagic": ["combat", "sourceUuid"],
-        "poolSpend": ["combat", "sourceUuid"],
         "precision": ["combat", "sourceUuid"],
         "rebuke": ["combat", "sourceUuid"],
         "receipt": [

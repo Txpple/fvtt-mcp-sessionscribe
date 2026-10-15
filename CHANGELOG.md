@@ -4,13 +4,14 @@ What changed for a user of the tools and the skill, release by release. Dates ar
 
 ## Unreleased
 
-- **`analyze-combat` reads every By the Books record of something that happened**: 54 flag
+- **`analyze-combat` reads every By the Books record of something that happened**: 53 flag
   families (was 28). The maneuvers and riders that rode a hit (the hit menu's picks, Commander's
   Strike's die, the sweep, Sneak Attack's dice, a spell's rider), the reactions and offers answered
   (the damage holds, a drop to 1, the death-save offer, the rebukes, a bystander's bend, the
   Initiative swaps and grants, a condition ended, the grapple's damage, a kit's tending, a rest
   grant), the dice changed after the roll, the summons and transformations, metamagic, and the
-  pools, chips and coatings spent now count among each actor's moments.
+  chips and coatings spent now count among each actor's moments. A pool spent by hand
+  (`poolSpend`) is skipped: By the Books' recorded contract shows it carries no stat stamp.
 - **The report says what it skipped.** Its header ends with a `families skipped` line naming every
   By the Books family on the scanned cards that the fold does not read, with how many cards and why
   (a decision whose consequence another family records, sheet upkeep at a rest, a record with no

@@ -35,8 +35,8 @@ describe('the families the scan reads, against its own lists', () => {
     expect(new Set(BF_KEYS).size).toBe(BF_KEYS.length);
   });
 
-  it('reads 54 families; the families skipped on purpose are none of them, and each says why', () => {
-    expect(BF_KEYS.length).toBe(54);
+  it('reads 53 families; the families skipped on purpose are none of them, and each says why', () => {
+    expect(BF_KEYS.length).toBe(53);
     for (const k of Object.keys(SKIPPED_FAMILIES)) {
       expect(BF_KEYS).not.toContain(k);
       expect(SKIPPED_FAMILIES[k]).toMatch(/\w/);

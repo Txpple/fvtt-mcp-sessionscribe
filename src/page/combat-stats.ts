@@ -106,8 +106,7 @@ export const BF_KEYS = [
   'summon',
   'transform',
   'metamagic',
-  // ... a pool, a chip or a coating spent
-  'poolSpend',
+  // ... a chip or a coating spent
   'useChip',
   'coatUse',
   'coatHit',
@@ -127,6 +126,8 @@ export const SKIPPED_FAMILIES: Record<string, string> = {
   masterySwap: 'sheet upkeep at a long rest, not play',
   formSwap: 'sheet upkeep at a long rest, not play',
   tacticalRefund: 'carries no stat stamp; the fold it refunds is in d20fold',
+  poolSpend:
+    'carries no stat stamp (its recorded shape has no combat or sourceUuid), so every record would read as legacy',
 };
 
 /** Keys read elsewhere than the families: the roll's own context and the combat roster. */

@@ -127,7 +127,7 @@ powershell -ExecutionPolicy Bypass -File scripts\setup.ps1 -PrefetchModel   # tr
   and under `fvtt-mod-battleflow` on every earlier card (never migrated), so `stampScope` picks
   the scope per message, the new one first.
 - **The contract.** By the Books records every key it writes, with its shape and where its stamp
-  sits, in its repo (`contracts/card-flags.json`, from its battery). `BF_KEYS` (54) is the folded
+  sits, in its repo (`contracts/card-flags.json`, from its battery). `BF_KEYS` (53) is the folded
   families (`FOLDED_FAMILIES`) and the counted ones (`COUNTED_FAMILIES`, one per record by its own
   `combat` and `sourceUuid`); `SKIPPED_FAMILIES` are read past with a reason, and the scan counts
   every family it skipped into the report's `families skipped` line. `contracts/consumes.json`

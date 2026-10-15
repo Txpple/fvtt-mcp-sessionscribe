@@ -166,7 +166,7 @@ Heart of Greenrest*, are published as examples in the suite repo:
   `audio/.jobs/`, so they never block the server.
 - **Timing.** Speech and chat are aligned by wall clock: Craig's `startTime` against Foundry's
   epoch-ms timestamps. There are no markers and no sync step.
-- **The combat report's read.** `analyze-combat` reads 54 of By the Books' flag families off the
+- **The combat report's read.** `analyze-combat` reads 53 of By the Books' flag families off the
   chat cards (`BF_KEYS` in `src/page/combat-stats.ts`): every record of something that happened at
   the table, stamped with who and when. A few are read past on purpose (a decision whose consequence
   another family records, sheet upkeep at a rest, a record with no stamp), and the report ends its
