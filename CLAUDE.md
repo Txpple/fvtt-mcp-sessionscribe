@@ -15,13 +15,14 @@ the campaign repo:
 It **reads the world and never writes it**. The session-diary page and the bestiary are authored
 through `fvtt-mcp-dnd5e`.
 
-**State (2026-10-15).** At **1.3.0**, released: it reads By the Books, Battle Flow's new name from
+**State (2026-10-19).** At **1.3.1**, released: `analyze-combat` folds 53 By the Books families
+(was 28), names the ones it skipped, and is tested against By the Books' contract; since 1.3.0
+it reads By the Books, Battle Flow's new name from
 its 3.0.0 (package id `fvtt-mod-bythebooks`, Txpple/fvtt-mod-bythebooks#6). The scan reads each
 card's stamps from the new flag scope and falls back to `fvtt-mod-battleflow` on that same card,
 since pre-upgrade cards keep the old scope forever; the probe reports `bythebooks { active,
 version, id }`, preferring the new id and falling back to a table still on 2.x. `main` carries
-unreleased work past 1.3.0 (CHANGELOG's Unreleased): `analyze-combat` folds 53 By the Books
-families, names the ones it skipped, and is tested against By the Books' contract. The reader gate
+nothing past 1.3.1. The reader gate
 (`scripts/verify-reader.mjs`) passed live on the sandbox with By the Books 3.0.0 (the probe names
 it; an idle scribe as the elected GM changed nothing). Not yet read live: a 3.0 card's stamps
 under the new scope (the unit tests cover both scopes); the next session with combat on a 3.0
