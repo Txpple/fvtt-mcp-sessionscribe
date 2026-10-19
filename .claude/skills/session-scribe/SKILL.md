@@ -156,6 +156,13 @@ Let `date` be the session's real date (`YYYY-MM-DD`).
    text page to that journal with fvtt-mcp-dnd5e's `manage-journals` (`update` with `newPageName`
    + `playerVisible: true`), named `Session N — <title>`, the date in the body, written from
    `transcript-public.md` in recap.html's register. Never a journal per session.
+8½. **The Bestiary** — when `journals.bestiary` is set: list every creature the party fought this
+   session (the combat log's enemy side; a variant counts as its MM family), drop those that
+   already have a page (`manage-journals get` on the Bestiary), and run fvtt-mcp-dnd5e's
+   **bestiary-builder** skill for each new one: the actor's own portrait, at most two MM
+   paragraphs, and a two-or-three-sentence `notable` callout of this session's encounter from the
+   recap. A creature met again only gets its callout refreshed when the session changed what the
+   players know about it. Name the new pages in the wrap report.
 9. **Commit** — in the campaign repo: `git add <sessions.dir>/<date> <snapshots.dir>` (and the
    staged illustration finals, when there are any) → commit (`session: <date> — <short title>`) →
    push. `audio/` is gitignored (the tracks, the job logs, the PDF previews); tell the user the
