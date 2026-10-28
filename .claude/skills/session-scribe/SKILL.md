@@ -112,6 +112,12 @@ Let `date` be the session's real date (`YYYY-MM-DD`).
 6. **Write the artifacts** (your judgment — read BOTH transcripts fully first). The set is
    `sessions.outputs`; each is a `.md` and, where a template exists, an `.html` (templates are in
    this skill's `templates/`):
+   - **The transcript is the only source of what happened.** The session plan (`plans/`) is a
+     script the table may leave at any beat: never take a beat, a place, an action or a line from
+     it. Check every "who did what, where" against the transcript before writing it, and where the
+     plan and the tape differ the tape wins without comment (the owner's rule, 2026-10-28, after a
+     recap had guards opening a door the DM had narrated one man opening, and a body on a roof the
+     DM had never put there). The same holds for the canon fold and for every illustration.
    - `recap.md` — the canonical session record from `transcript.md`: what happened, in order,
      with names. GM voice, complete, spoiler-tolerant; exact numbers welcome.
    - `recap.html` — from `templates/recap.html`, filling every placeholder. **Written from
@@ -122,6 +128,15 @@ Let `date` be the session's real date (`YYYY-MM-DD`).
    - `recap-print.html` — from `templates/recap-print.html`: the SAME text in a block layout with
      page-break rules and page numbers. Keep the template's `.keep` groups: each heading with its
      first block (and a picture that follows it), endmatter as one `.entry` per item.
+   - **Appendix 1 – Lore** (every campaign; the DM's standing rule, 2026-10-27, renamed 2026-10-28):
+     after Deeds of the Day, an appendix with exactly that title, one entry per document the party
+     found or was handed this session (letters, notes, notices, ledgers, boards, keys, scroll labels)
+     with its found-in line and its **complete text verbatim** from the Foundry item or handout, in
+     the order found. Never summarise or trim it, even when the recap body quoted it. It goes in
+     recap.md, recap.html, recap-print.html and the Session Diary page (readaloud blocks). Only
+     documents the players actually read. The body leans on it: a search of a place is a summary of
+     the key finds, the party's key speculations and their tentative ideas of what is going on, with
+     a pointer to the appendix, never a room-by-room back-and-forth.
    - **Illustrations** — when `sessions.illustrations` is true. Pick the night's most memorable
      beats across the WHOLE session (roleplay and town moments as well as the big fight — roughly
      one per story section) and make each one with the **illustration-builder** skill: canon from
@@ -183,7 +198,10 @@ Let `date` be the session's real date (`YYYY-MM-DD`).
   Combat is punchy: short sentences, hard verbs, one beat per sentence. Who killed what is
   factual, not style-flexible.
 - **No meta, no player names, no technical-issues talk in the player recap** — UI / audio /
-  browser troubles belong in the mechanics notes.
+  browser troubles belong in the mechanics notes. **Nothing from outside the fiction, either**: the
+  recap never names the Player's Guide, the plan, a rulebook, Foundry, a sheet or a handout file.
+  What a player cites from such a source is written as what the character knows or has heard, never
+  "he remembered the Guide's warning" (sent back 2026-10-28).
 - **Quote found-item text verbatim when it matters** (a plot-loaded item's description), then note
   who read it aloud, before any paraphrase.
 - **The combat report opens on the one headline fact, in numbers**, and has a "what the buffs and
