@@ -4,6 +4,10 @@ What changed for a user of the tools and the skill, release by release. Dates ar
 
 ## Unreleased
 
+- **`FOUNDRY_HOST=generic`**, fvtt-mcp-dnd5e's host for any Foundry at a URL (a self-hosted box), is
+  now a host the scribe knows, and the default when `FOUNDRY_HOST` is unset or unknown (was
+  `molten`, which read such a box correctly but named it wrong). The read tools' `host` takes
+  `generic` too. A Molten registration sets `FOUNDRY_HOST=molten` as before.
 - **`analyze-combat` reads every By the Books record of something that happened**: 53 flag
   families (was 28). The maneuvers and riders that rode a hit (the hit menu's picks, Commander's
   Strike's die, the sweep, Sneak Attack's dice, a spell's rider), the reactions and offers answered

@@ -1,5 +1,5 @@
 {
-  "_comment": "House convention registers this server at USER scope: claude mcp add -s user sessionscribe -e FOUNDRY_HOST=molten -- \"C:/Program Files/nodejs/node.exe\" <abs path>/fvtt-mcp-sessionscribe/dist/index.js. Without `claude` on PATH (a desktop-app install), put the sessionscribe entry below under mcpServers in ~/.claude.json. The full node.exe path is the standard Windows install; a client launched outside a shell may not find a bare `node`. FOUNDRY_HOST is the default host for Foundry reads: molten (a hosted world) or local (a Foundry on this machine); every read tool can override it per call. When the hosted world's connection lives in its own fvtt-mcp-dnd5e env file (one per world, as the dnd5e server's per-world registrations do), add FVTT_MCP_ENV with that file's absolute path, the same value that world's dnd5e registration uses; without it the reads use ../fvtt-mcp-dnd5e/.env, and a molten read fails there if that file holds only the local host.",
+  "_comment": "House convention registers this server at USER scope: claude mcp add -s user sessionscribe -e FOUNDRY_HOST=generic -- \"C:/Program Files/nodejs/node.exe\" <abs path>/fvtt-mcp-sessionscribe/dist/index.js. Without `claude` on PATH (a desktop-app install), put the sessionscribe entry below under mcpServers in ~/.claude.json. The full node.exe path is the standard Windows install; a client launched outside a shell may not find a bare `node`. FOUNDRY_HOST is the default host for Foundry reads: generic (any Foundry at a URL, the default), molten (Molten Hosting) or local (a Foundry on this machine); every read tool can override it per call. When the hosted world's connection lives in its own fvtt-mcp-dnd5e env file (one per world, as the dnd5e server's per-world registrations do), add FVTT_MCP_ENV with that file's absolute path, the same value that world's dnd5e registration uses; without it the reads use ../fvtt-mcp-dnd5e/.env, and a generic or molten read fails there if that file holds only the local host.",
   "mcpServers": {
     "sessionscribe": {
       "command": "C:/Program Files/nodejs/node.exe",
@@ -7,7 +7,7 @@
         "<abs path>/fvtt-mcp-sessionscribe/dist/index.js"
       ],
       "env": {
-        "FOUNDRY_HOST": "molten",
+        "FOUNDRY_HOST": "generic",
         "FVTT_MCP_ENV": "<abs path>/fvtt-mcp-dnd5e/.env.<world>"
       }
     }

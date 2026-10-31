@@ -71,14 +71,14 @@ describe('export-session-chat', () => {
       {
         op: 'scanSessionChat',
         args: { since: START - PAD, until: START + 3_600_000 + PAD },
-        host: 'molten',
+        host: 'generic',
         worldId: 'lost-mine',
       },
     ]);
     expect(JSON.parse(fs.readFileSync(file, 'utf8'))).toEqual(RECORDS);
     expect(out).toMatchObject({
       file,
-      host: 'molten',
+      host: 'generic',
       messages: 4,
       ofTotal: 99,
       rolls: 2,

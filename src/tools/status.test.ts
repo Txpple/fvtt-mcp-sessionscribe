@@ -63,7 +63,7 @@ describe('scribe-status', () => {
   it('is ready when every probe passes, and never prints the password', async () => {
     const out = await new StatusTool(deps()).handleStatus({});
     expect(out.ready).toBe(true);
-    expect(out.defaultHost).toBe('molten');
+    expect(out.defaultHost).toBe('generic');
     expect(out.checks.identity.detail).toBe('"Scribe Assistant" (password set)');
     expect(JSON.stringify(out)).not.toContain('hunter2');
     expect(out.checks.python.detail).toContain('C:\\py\\python.exe');
@@ -109,11 +109,14 @@ describe('scribe-status', () => {
 });
 
 describe('config', () => {
-  it('expands %VAR% paths and defaults an unknown host to molten', () => {
+  it('expands %VAR% paths and defaults an unset or unknown host to generic', () => {
     expect(expandPath('%USERPROFILE%\\x', { USERPROFILE: 'C:\\Users\\u' })).toBe('C:\\Users\\u\\x');
     expect(expandPath('%NOPE%\\x', {})).toBe('%NOPE%\\x');
     expect(loadConfig({ FOUNDRY_HOST: 'LOCAL' }).defaultHost).toBe('local');
-    expect(loadConfig({ FOUNDRY_HOST: 'generic' }).defaultHost).toBe('molten');
+    expect(loadConfig({ FOUNDRY_HOST: 'molten' }).defaultHost).toBe('molten');
+    expect(loadConfig({ FOUNDRY_HOST: 'generic' }).defaultHost).toBe('generic');
+    expect(loadConfig({ FOUNDRY_HOST: 'forge' }).defaultHost).toBe('generic');
+    expect(loadConfig({}).defaultHost).toBe('generic');
     expect(loadConfig({ SystemRoot: 'D:\\Win' }).tar).toBe(
       path.join('D:\\Win', 'System32', 'tar.exe')
     );
@@ -148,7 +151,7 @@ describe('scribe-status connect', () => {
       return { ok: false, host: req.host, error: 'world not running' };
     };
     const out = await new StatusTool(deps({ reader })).handleStatus({ connect: true });
-    expect(seen).toEqual([{ op: 'probe', host: 'molten' }]);
-    expect(out.world).toEqual({ ok: false, host: 'molten', error: 'world not running' });
+    expect(seen).toEqual([{ op: 'probe', host: 'generic' }]);
+    expect(out.world).toEqual({ ok: false, host: 'generic', error: 'world not running' });
   });
 });

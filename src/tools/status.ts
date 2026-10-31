@@ -23,7 +23,9 @@ import { toInputSchema } from '../utils/schema.js';
 export const hostSchema = z
   .enum(HOSTS)
   .optional()
-  .describe('Which Foundry: molten (prod) or local (the sandbox). Default: the registration’s.');
+  .describe(
+    'Which Foundry: generic (any URL) or molten, as fvtt-mcp-dnd5e’s .env sets them, or local. Default: the registration’s.'
+  );
 
 const statusSchema = z.object({
   date: z

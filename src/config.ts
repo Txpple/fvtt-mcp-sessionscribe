@@ -13,7 +13,7 @@ import dotenv from 'dotenv';
 export const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 dotenv.config({ path: path.join(repoRoot, '.env'), quiet: true });
 
-export const HOSTS = ['molten', 'local'] as const;
+export const HOSTS = ['generic', 'molten', 'local'] as const;
 export type HostName = (typeof HOSTS)[number];
 
 export interface Config {
@@ -49,7 +49,7 @@ function readPackageVersion(): string {
 }
 
 export function loadConfig(env: NodeJS.ProcessEnv): Config {
-  const host = (env.FOUNDRY_HOST ?? 'molten').toLowerCase();
+  const host = (env.FOUNDRY_HOST ?? 'generic').toLowerCase();
   const systemRoot = env.SystemRoot ?? 'C:\\Windows';
   return {
     server: { name: 'fvtt-mcp-sessionscribe', version: readPackageVersion() },
@@ -66,7 +66,7 @@ export function loadConfig(env: NodeJS.ProcessEnv): Config {
       env
     ),
     tar: path.join(systemRoot, 'System32', 'tar.exe'),
-    defaultHost: (HOSTS as readonly string[]).includes(host) ? (host as HostName) : 'molten',
+    defaultHost: (HOSTS as readonly string[]).includes(host) ? (host as HostName) : 'generic',
   };
 }
 

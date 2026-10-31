@@ -24,7 +24,7 @@ transcript.
 git clone https://github.com/Txpple/fvtt-mcp-sessionscribe && cd fvtt-mcp-sessionscribe
 npm install && npm run build      # fvtt-mcp-dnd5e must be cloned beside this repo and built first
 cp .env.example .env              # FOUNDRY_SCRIBE_USER / FOUNDRY_SCRIBE_PASSWORD, SCRIBE_CAMPAIGN_REPO
-claude mcp add -s user sessionscribe -e FOUNDRY_HOST=molten -- node /absolute/path/to/fvtt-mcp-sessionscribe/dist/index.js
+claude mcp add -s user sessionscribe -e FOUNDRY_HOST=generic -- node /absolute/path/to/fvtt-mcp-sessionscribe/dist/index.js
 ```
 
 - **The Foundry connection is `fvtt-mcp-dnd5e`'s `.env`,** not this repo's: fill that in first
@@ -39,7 +39,7 @@ claude mcp add -s user sessionscribe -e FOUNDRY_HOST=molten -- node /absolute/pa
   "sessionscribe": {
     "command": "C:/Program Files/nodejs/node.exe",
     "args": ["/absolute/path/to/fvtt-mcp-sessionscribe/dist/index.js"],
-    "env": { "FOUNDRY_HOST": "molten" }
+    "env": { "FOUNDRY_HOST": "generic" }
   }
   ```
 
@@ -86,7 +86,7 @@ else works without it:
 So a machine can produce the chat export, the combat report, the party snapshot and the PDFs
 before the GPU side is set up, and add transcription later.
 
-`FOUNDRY_HOST` is `molten` (a hosted world) or `local` (a Foundry on this machine). It sets the
+`FOUNDRY_HOST` is `generic` (any Foundry at a URL, the default), `molten` (Molten Hosting) or `local` (a Foundry on this machine). It sets the
 default host for reads, and each read tool can override it per call. The host URLs come from `fvtt-mcp-dnd5e`'s `.env`, not this repo's.
 
 **Requirements:**
