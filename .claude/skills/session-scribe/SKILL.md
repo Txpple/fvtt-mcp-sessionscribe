@@ -128,15 +128,12 @@ Let `date` be the session's real date (`YYYY-MM-DD`).
    - `recap-print.html` — from `templates/recap-print.html`: the SAME text in a block layout with
      page-break rules and page numbers. Keep the template's `.keep` groups: each heading with its
      first block (and a picture that follows it), endmatter as one `.entry` per item.
-   - **Appendix 1 – Lore** (every campaign; the DM's standing rule, 2026-10-27, renamed 2026-10-28):
-     after Deeds of the Day, an appendix with exactly that title, one entry per document the party
-     found or was handed this session (letters, notes, notices, ledgers, boards, keys, scroll labels)
-     with its found-in line and its **complete text verbatim** from the Foundry item or handout, in
-     the order found. Never summarise or trim it, even when the recap body quoted it. It goes in
-     recap.md, recap.html, recap-print.html and the Session Diary page (readaloud blocks). Only
-     documents the players actually read. The body leans on it: a search of a place is a summary of
-     the key finds, the party's key speculations and their tentative ideas of what is going on, with
-     a pointer to the appendix, never a room-by-room back-and-forth.
+   - **No appendix of found documents** (the DM, 2026-10-30): letters, notes, notices, ledgers,
+     boards and scroll labels live on the **clue board** in Foundry, not in the session record. (An
+     *Appendix 1 – Lore* ran from 2026-10-27 and was retired.) A search of a place is still written
+     as a summary of the key finds, the party's key speculations and their tentative ideas of what
+     is going on, never a room-by-room back-and-forth; quote a document in the body only where the
+     moment turns on it.
    - **Illustrations** — when `sessions.illustrations` is true. Pick the night's most memorable
      beats across the WHOLE session (roleplay and town moments as well as the big fight — roughly
      one per story section) and make each one with the **illustration-builder** skill: canon from
@@ -171,7 +168,7 @@ Let `date` be the session's real date (`YYYY-MM-DD`).
    text page to that journal with fvtt-mcp-dnd5e's `manage-journals` (`update` with `newPageName`
    + `playerVisible: true`), named `Session N — <title>`. Never a journal per session.
    **The page is recap.html itself, not a summary of it** (DM, 2026-10-30): every section,
-   illustration, song, Quotable Quotes, Deeds of the Day and Appendix 1 – Lore, converted to
+   illustration, song, Quotable Quotes and Deeds of the Day (no appendix), converted to
    journal HTML by `python scripts/recap-to-journal.py <session>/recap.html
    worlds/<world>/assets/journal/session-diary/<date>/ <title-image> <out.html>`. **The title
    picture goes on top:** the session's most thematic illustration (the one that names the

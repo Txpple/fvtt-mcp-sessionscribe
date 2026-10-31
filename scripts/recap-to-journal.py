@@ -1,7 +1,8 @@
 """Convert a session's recap.html (the email layout) into Session Diary journal HTML.
 
 The diary page is the recap itself, not a summary (DM, 2026-10-30): every section, illustration,
-song, quote, deed and lore entry, with one illustration moved to the top as the title picture.
+song, quote and deed, with one illustration moved to the top as the title picture. No appendix of
+found documents: those live on the clue board (DM, 2026-10-30).
 
 usage: python scripts/recap-to-journal.py <recap.html> <asset-prefix> <title-image> <out.html>
 
@@ -11,7 +12,7 @@ usage: python scripts/recap-to-journal.py <recap.html> <asset-prefix> <title-ima
 
 Mapping: header -> date line; the TL;DR -> p.lead; h2 -> h2.spaced; picture tables -> figure with
 figcaption; party cards (00-*.jpg) -> a floated portrait beside the text; the shaded song box and
-lore blockquotes -> blockquote.readaloud. Inline styles, tables and spans are dropped.
+any quoted document -> blockquote.readaloud. Inline styles, tables and spans are dropped.
 """
 import re
 import sys
