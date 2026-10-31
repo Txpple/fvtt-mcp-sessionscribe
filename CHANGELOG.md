@@ -2,12 +2,21 @@
 
 What changed for a user of the tools and the skill, release by release. Dates are tag dates.
 
-## Unreleased
+## 1.3.2 — 2026-10-31 — a self-hosted Foundry is a host the scribe knows
 
 - **`FOUNDRY_HOST=generic`**, fvtt-mcp-dnd5e's host for any Foundry at a URL (a self-hosted box), is
   now a host the scribe knows, and the default when `FOUNDRY_HOST` is unset or unknown (was
   `molten`, which read such a box correctly but named it wrong). The read tools' `host` takes
   `generic` too. A Molten registration sets `FOUNDRY_HOST=molten` as before.
+- **The `session-scribe` skill:**
+  - The transcript is the only source of what happened: the session plan never supplies a beat, and
+    nothing from outside the fiction goes into the recap.
+  - The session-diary page is `recap.html` whole with a title picture on top;
+    `scripts/recap-to-journal.py` converts it.
+  - Found documents get no appendix: they live on the clue board.
+  - A new step writes a Bestiary page for every monster fought for the first time.
+
+## 1.3.1 — 2026-10-19 — analyze-combat reads every By the Books record of something that happened
 - **`analyze-combat` reads every By the Books record of something that happened**: 53 flag
   families (was 28). The maneuvers and riders that rode a hit (the hit menu's picks, Commander's
   Strike's die, the sweep, Sneak Attack's dice, a spell's rider), the reactions and offers answered
