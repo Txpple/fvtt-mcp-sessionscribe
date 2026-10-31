@@ -169,8 +169,16 @@ Let `date` be the session's real date (`YYYY-MM-DD`).
    the format of the newest earlier snapshot, diffable against it.
 8. **The session-diary page** — when `journals.sessionDiary` is set: append ONE player-visible
    text page to that journal with fvtt-mcp-dnd5e's `manage-journals` (`update` with `newPageName`
-   + `playerVisible: true`), named `Session N — <title>`, the date in the body, written from
-   `transcript-public.md` in recap.html's register. Never a journal per session.
+   + `playerVisible: true`), named `Session N — <title>`. Never a journal per session.
+   **The page is recap.html itself, not a summary of it** (DM, 2026-10-30): every section,
+   illustration, song, Quotable Quotes, Deeds of the Day and Appendix 1 – Lore, converted to
+   journal HTML by `python scripts/recap-to-journal.py <session>/recap.html
+   worlds/<world>/assets/journal/session-diary/<date>/ <title-image> <out.html>`. **The title
+   picture goes on top:** the session's most thematic illustration (the one that names the
+   session's title, or its turning point), moved out of the body to the head of the page with its
+   caption, then the date line. Upload `<session>/img/` to that asset folder first
+   (`upload-asset-tree`), send the converted HTML as the page's `content`, then read it back and
+   check the figure and image counts survived.
 8½. **The Bestiary** — when `journals.bestiary` is set: list every creature the party fought this
    session (the combat log's enemy side; a variant counts as its MM family), drop those that
    already have a page (`manage-journals get` on the Bestiary), and run fvtt-mcp-dnd5e's
