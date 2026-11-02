@@ -12,7 +12,10 @@ export const CAMPAIGN_JSON = {
   worldId: 'lost-mine',
   party: PARTY,
   excludedActors: ['Test PC'],
-  journals: { sessionDiary: { name: 'Session Diary', folder: 'Adventure Log' } },
+  journals: {
+    sessionDiary: { name: 'Session Diary', folder: 'Adventure Log' },
+    combatLogs: { name: 'Combat Logs', folder: 'Adventure Log' },
+  },
   sessions: {
     dir: 'sessions',
     outputs: ['recap', 'combat-log', 'gm-notes-story', 'gm-notes-mechanics'],

@@ -25,7 +25,11 @@ export const CampaignSchema = z.looseObject({
   party: z.array(z.string().min(1)).min(1),
   excludedActors: z.array(z.string()).default([]),
   journals: z
-    .looseObject({ sessionDiary: journalRef.optional(), bestiary: journalRef.optional() })
+    .looseObject({
+      sessionDiary: journalRef.optional(),
+      combatLogs: journalRef.optional(),
+      bestiary: journalRef.optional(),
+    })
     .default({}),
   sessions: z
     .looseObject({

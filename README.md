@@ -12,7 +12,7 @@ combat report, GM notes and a party snapshot into your campaign repo.
 [Claude Code](https://claude.com/claude-code) drives it. The server is registered as
 `sessionscribe`, and its `session-scribe` skill runs the pipeline end to end, where
 [`fvtt-mcp-dnd5e`](https://github.com/Txpple/fvtt-mcp-dnd5e) is a general bridge to Foundry's API.
-It **reads the world and never writes it**; the session-diary page goes in through `fvtt-mcp-dnd5e`.
+It **reads the world and never writes it**; the session-diary and combat-logs pages go in through `fvtt-mcp-dnd5e`.
 
 **At the table, the DM does four things:** `/join` Craig, play, `/stop`, and paste the link to
 Claude. There is nothing to mark, export or download. A "mark that" said aloud is found in the
@@ -107,7 +107,7 @@ pipeline in this order:
 2. Export the chat log, build the transcript and analyse the combat.
 3. Write the recap, the combat log and the GM notes.
 4. Render the PDFs and look at every page.
-5. Snapshot the party and add the session-diary page.
+5. Snapshot the party and add the session-diary and combat-logs pages.
 6. Commit to the campaign repo.
 
 The tools handle correctness and the skill handles judgment: the recap's voice, which beats

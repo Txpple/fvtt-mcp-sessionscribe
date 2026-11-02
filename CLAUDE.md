@@ -12,10 +12,10 @@ the campaign repo:
   (Battle Flow's before its 3.0.0 rename), the party's sheets.
 - **Record:** transcripts, recaps, combat logs, GM notes, party snapshots.
 
-It **reads the world and never writes it**. The session-diary page and the bestiary are authored
+It **reads the world and never writes it**. The session-diary and combat-logs pages and the bestiary are authored
 through `fvtt-mcp-dnd5e`.
 
-**State (2026-10-31).** At **1.3.2**, released: `FOUNDRY_HOST=generic` (any Foundry at a URL) is a
+**State (2026-11-02).** At **1.3.2**, released: `FOUNDRY_HOST=generic` (any Foundry at a URL) is a
 host the scribe knows and the default (prod is a self-hosted box; the doctor green on it), with the
 skill's changes since 1.3.1 (the transcript the only source, the diary page from `recap.html`, found
 documents on the clue board, the Bestiary step). Since 1.3.1 `analyze-combat` folds 53 By the Books families
@@ -25,7 +25,8 @@ its 3.0.0 (package id `fvtt-mod-bythebooks`, Txpple/fvtt-mod-bythebooks#6). The 
 card's stamps from the new flag scope and falls back to `fvtt-mod-battleflow` on that same card,
 since pre-upgrade cards keep the old scope forever; the probe reports `bythebooks { active,
 version, id }`, preferring the new id and falling back to a table still on 2.x. `main` carries
-nothing past 1.3.2. The reader gate
+past 1.3.2, unreleased: the skill's combat-logs page (`journals.combatLogs`,
+`scripts/combat-log-to-journal.py`), the Session Diary's pattern for the numbers. The reader gate
 (`scripts/verify-reader.mjs`) passed live on the sandbox with By the Books 3.0.0 (the probe names
 it; an idle scribe as the elected GM changed nothing). Not yet read live: a 3.0 card's stamps
 under the new scope (the unit tests cover both scopes); the next session with combat on a 3.0

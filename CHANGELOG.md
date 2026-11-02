@@ -2,6 +2,13 @@
 
 What changed for a user of the tools and the skill, release by release. Dates are tag dates.
 
+## Unreleased
+
+- **The `session-scribe` skill: a Combat Logs journal page per session,** the Session Diary's pattern
+  for the numbers (`campaign.json` → `journals.combatLogs`): the session's `combat-log.html` converted to
+  journal HTML by `scripts/combat-log-to-journal.py` (the bar figures as tables, the callouts as readaloud
+  blocks, the scribe's provenance dropped) and appended as a player-visible `Session N — <title>` page.
+
 ## 1.3.2 — 2026-10-31 — a self-hosted Foundry is a host the scribe knows
 
 - **`FOUNDRY_HOST=generic`**, fvtt-mcp-dnd5e's host for any Foundry at a URL (a self-hosted box), is

@@ -37,8 +37,8 @@ the world and **writes the record**; it never writes to Foundry.
 | `snapshot-party` | The party's sheets → `<snapshots.dir>/<date>/<PC>.json` + the digest facts. |
 | `render-pdf` | The outputs' HTML → PDFs (recap.pdf from recap-print.html), page counts, every page as a JPEG to look at. |
 
-Writes to the world stay with `fvtt-mcp-dnd5e`: the session-diary page (`manage-journals`) and the
-Bestiary (its `bestiary-builder` skill). Illustrations are imagegen's `illustration-builder`
+Writes to the world stay with `fvtt-mcp-dnd5e`: the session-diary and combat-logs pages
+(`manage-journals`) and the Bestiary (its `bestiary-builder` skill). Illustrations are imagegen's `illustration-builder`
 skill. When a sibling skill is not loaded, read its SKILL.md by path: the sibling repos sit
 beside this one (`<repos>/fvtt-mcp-dnd5e/.claude/skills/bestiary-builder/`,
 `<repos>/fvtt-mcp-imagegen/.claude/skills/illustration-builder/`).
@@ -50,7 +50,7 @@ Every campaign fact comes from the campaign repo (the scribe's `.env` names it a
 **Pull it** before you start, and read:
 
 - `campaign.json`: `name`, `worldId` (the scribe refuses to read another world), `party` (the
-  snapshot roster; nothing else is a PC, `excludedActors` never), `journals.sessionDiary`,
+  snapshot roster; nothing else is a PC, `excludedActors` never), `journals.sessionDiary` / `combatLogs`,
   `sessions.dir` / `outputs` / `pdf` / `skewSeconds` / `illustrations` / `speakers` (Discord id →
   transcript label), `snapshots.dir`.
 - `STYLE.md`: the house style, in full, before writing a word. What it does not cover falls to
@@ -176,6 +176,16 @@ Let `date` be the session's real date (`YYYY-MM-DD`).
    caption, then the date line. Upload `<session>/img/` to that asset folder first
    (`upload-asset-tree`), send the converted HTML as the page's `content`, then read it back and
    check the figure and image counts survived.
+8¼. **The combat-logs page** — when `journals.combatLogs` is set: the Session Diary's pattern
+   again, for the numbers. Append ONE player-visible text page to that journal (`update` with
+   `newPageName` + `playerVisible: true`), named `Session N — <title>` as the diary's page is.
+   **The page is combat-log.html itself**, every section and table, converted by
+   `python scripts/combat-log-to-journal.py <session>/combat-log.html <out.html>`: the date
+   line and the count of combats on top, the bar figures as two-column tables under their
+   captions, the callouts as readaloud blocks; the scribe's provenance line and footer dropped.
+   Send the HTML as the page's `content`, read it back and check the table and section counts
+   against the script's line. Players read it, so nothing GM-only goes in: the combat log is
+   written from the public transcript's rolls already.
 8½. **The Bestiary** — when `journals.bestiary` is set: list every creature the party fought this
    session (the combat log's enemy side; a variant counts as its MM family), drop those that
    already have a page (`manage-journals get` on the Bestiary), and run fvtt-mcp-dnd5e's
