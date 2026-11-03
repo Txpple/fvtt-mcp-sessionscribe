@@ -26,7 +26,12 @@ card's stamps from the new flag scope and falls back to `fvtt-mod-battleflow` on
 since pre-upgrade cards keep the old scope forever; the probe reports `bythebooks { active,
 version, id }`, preferring the new id and falling back to a table still on 2.x. `main` carries
 past 1.3.2, unreleased: the skill's combat-logs page (`journals.combatLogs`,
-`scripts/combat-log-to-journal.py`), the Session Diary's pattern for the numbers. The reader gate
+`scripts/combat-log-to-journal.py`), the Session Diary's pattern for the numbers; and transcription
+that hears the campaign (2026-11-03): `large-v3` by default, `campaign.json`'s names as hotwords
+(`sessions.vocabulary`), no conditioning on its own output, segments split at pauses, prompt echoes
+dropped, and `build-transcript` respelling by the sound-alike guide (`sessions.soundsLike`,
+`src/transcript/sounds-like.ts`). Replayed on two real sessions' audio into a scratch copy; not yet
+run through the live server, which needs a restart to load it. The reader gate
 (`scripts/verify-reader.mjs`) passed live on the sandbox with By the Books 3.0.0 (the probe names
 it; an idle scribe as the elected GM changed nothing). Not yet read live: a 3.0 card's stamps
 under the new scope (the unit tests cover both scopes); the next session with combat on a 3.0

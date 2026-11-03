@@ -52,7 +52,8 @@ Every campaign fact comes from the campaign repo (the scribe's `.env` names it a
 - `campaign.json`: `name`, `worldId` (the scribe refuses to read another world), `party` (the
   snapshot roster; nothing else is a PC, `excludedActors` never), `journals.sessionDiary` / `combatLogs`,
   `sessions.dir` / `outputs` / `pdf` / `skewSeconds` / `illustrations` / `speakers` (Discord id →
-  transcript label), `snapshots.dir`.
+  transcript label) / `vocabulary` (the names whisper is told to spell) / `soundsLike` (what it
+  writes for a name it still mishears), `snapshots.dir`.
 - `STYLE.md`: the house style, in full, before writing a word. What it does not cover falls to
   the defaults under "Judgment notes" below.
 
@@ -89,10 +90,16 @@ Let `date` be the session's real date (`YYYY-MM-DD`).
    after 7 days: on a 404/410, tell the user at once; `/recordings` in Discord re-fetches a lost
    link. If the Craig API misbehaves, ask the DM for the flac zip from the Craig page and run
    `fetch-recording { date, zipPath }` instead.
-2. **Transcribe** — `transcribe-recording { date }` (`model: "large-v3"` when the user wants
-   maximum accuracy; `large-v3-turbo` is the default). Minutes on a big GPU; follow it with
+2. **Transcribe** — `transcribe-recording { date }` (`large-v3`, the default; `large-v3-turbo`
+   is faster and misses more names). Minutes on a big GPU; follow it with
    `scribe-status { date, waitSeconds: 300 }` and do steps 3, 5 and 7 meanwhile (they need only
-   Foundry).
+   Foundry). Whisper spells a name right when it is in `campaign.json`: the title, `party`, the
+   `sessions.speakers` labels and `sessions.vocabulary` go to every window as hotwords. When the
+   transcript mishears a name that matters (a new NPC, a place), spell it right in what you write
+   and, at the wrap, add it to `sessions.vocabulary` (most-said first) so the next session hears it.
+   When whisper writes a real word for it because of how the table says it ("Aldrich" for Aldric),
+   add that form to `sessions.soundsLike` too, never a word that is also meant as itself, and run
+   `build-transcript` again: seconds, no re-transcription.
 3. **Chat log** — `export-session-chat { date }`.
 4. **Transcript** — `build-transcript { date }`. **First run on a new Craig + Foundry pairing:**
    verify the skew: find a moment the DM says a roll aloud ("make a dex save") and compare its

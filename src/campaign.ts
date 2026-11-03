@@ -40,6 +40,10 @@ export const CampaignSchema = z.looseObject({
       illustrations: z.boolean().default(false),
       /** Discord id or username → the transcript's speaker label (a character name). */
       speakers: z.record(z.string(), z.string()).optional(),
+      /** Proper nouns said at the table (people, places, gods) that whisper should spell right. */
+      vocabulary: z.array(z.string().min(1)).optional(),
+      /** A name as the campaign spells it → what whisper writes for it ("Aldric": ["Aldrich"]). */
+      soundsLike: z.record(z.string().min(1), z.array(z.string().min(1))).optional(),
     })
     .default({
       dir: 'sessions',

@@ -1,6 +1,7 @@
 // build-transcript: craig-info.json + transcript-segments.json + chatlog.json → transcript.md
 // (the full timeline, whispers marked 🤫) and transcript-public.md (whispers withheld). Pure file
-// work; no Foundry, no Python. Was session_scribe.py `align`.
+// work; no Foundry, no Python. Was session_scribe.py `align`; the speech is respelled by the
+// campaign's sound-alike guide first (src/transcript/sounds-like.ts).
 
 import * as fs from 'node:fs';
 import * as path from 'node:path';
@@ -14,6 +15,7 @@ import {
   DEFAULT_ALIGN,
   type Segments,
 } from '../transcript/align.js';
+import { respell } from '../transcript/sounds-like.js';
 import { toInputSchema } from '../utils/schema.js';
 
 const BuildTranscriptSchema = z.object({
@@ -52,8 +54,9 @@ export class BuildTranscriptTool {
         description:
           "Merge a session's per-speaker speech with its Foundry chat log by wall clock: " +
           'transcript.md (speech, 🎲 rolls, 💬 chat, 🤫 whispers and blind rolls) and ' +
-          'transcript-public.md (whispers withheld; write the player recap from it). Needs ' +
-          'craig-info.json and transcript-segments.json; chatlog.json optional.',
+          'transcript-public.md (whispers withheld; write the player recap from it). Names are ' +
+          "respelled by campaign.json's sessions.soundsLike. Needs craig-info.json and " +
+          'transcript-segments.json; chatlog.json optional.',
         inputSchema: toInputSchema(BuildTranscriptSchema),
       },
     ];
@@ -64,9 +67,9 @@ export class BuildTranscriptTool {
     const campaign = loadCampaign(this.deps.config.campaignRepo);
     const dir = resolveSessionDir(campaign, p.date);
     const meta = readJson<CraigInfo>(path.join(dir, 'craig-info.json'), 'run fetch-recording');
-    const segs = readJson<Segments>(
-      path.join(dir, 'transcript-segments.json'),
-      'run transcribe-recording'
+    const { segs, respelled } = respell(
+      readJson<Segments>(path.join(dir, 'transcript-segments.json'), 'run transcribe-recording'),
+      campaign.sessions.soundsLike
     );
     const chatFile = path.join(dir, 'chatlog.json');
     const chat = fs.existsSync(chatFile)
@@ -86,6 +89,7 @@ export class BuildTranscriptTool {
       files: [full, pub],
       ...out.stats,
       skewSeconds,
+      ...(Object.keys(respelled).length ? { respelled } : {}),
       ...(fs.existsSync(chatFile) ? {} : { note: 'no chatlog.json: speech only' }),
       ...(meta.craigNotes ? { craigNotes: meta.craigNotes } : {}),
     };

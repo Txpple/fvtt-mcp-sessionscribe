@@ -4,7 +4,8 @@
 Run as a detached job by fvtt-mcp-sessionscribe's transcribe-recording tool (src/jobs.ts), with
 the transcription venv's interpreter (scripts/setup.ps1 builds it):
 
-  transcribe --session-dir D [--model M] [--device auto|cuda|cpu] [--language en] [--fresh]
+  transcribe --session-dir D [--model M] [--device auto|cuda|cpu] [--language en]
+             [--hotwords "Names, said, at the table."] [--fresh]
   smoke [clip]                verify faster-whisper loads on CUDA (setup.ps1 runs this)
 
 Ported from session_scribe.py (fvtt-mcp-dnd5e), which also fetched and aligned; those are
@@ -12,7 +13,7 @@ TypeScript now. What changed here: each track's segments are written the moment 
 finishes (audio/.jobs/transcribe.tracks/), so a crash or a killed run resumes where it stopped
 instead of losing the lot, and the job status file (SCRIBE_JOB_STATUS, the src/jobs.ts contract)
 says which track is running. transcript-segments.json is assembled at the end, in the shape
-build-transcript reads: {model, device, tracks: [{file, speaker, segments: [{start, end, text}]}]}.
+build-transcript reads: {model, hotwords, device, tracks: [{file, speaker, segments: [{start, end, text}]}]}.
 """
 
 import argparse
@@ -90,6 +91,35 @@ def load_model(model_name: str, device: str):
 
 # --- transcription ------------------------------------------------------------
 
+GAP_SECONDS = 1.5  # a pause between two words this long starts a new segment
+FUNCTION_WORDS = {"the", "and", "of", "a", "an"}
+
+
+def split_on_gaps(segment) -> list[dict]:
+    """VAD joins the speech chunks before whisper sees them, so one segment can hold lines said
+    minutes apart (a 1,248 s segment on a quiet player's track). Its words are restored to the
+    track's clock one by one, so cut the segment wherever the speaker went quiet."""
+    words = [w for w in (segment.words or []) if w.word.strip()]
+    if not words:
+        return [{"start": round(segment.start, 2), "end": round(segment.end, 2), "text": segment.text.strip()}]
+    runs, run = [], [words[0]]
+    for w in words[1:]:
+        if w.start - run[-1].end >= GAP_SECONDS:
+            runs.append(run)
+            run = [w]
+        else:
+            run.append(w)
+    runs.append(run)
+    return [{"start": round(r[0].start, 2), "end": round(r[-1].end, 2),
+             "text": "".join(w.word for w in r).strip()} for r in runs]
+
+
+def echoes_prompt(text: str, prompt_words: set[str]) -> bool:
+    """Over noise whisper sometimes reads the hotwords back ("Aldric Stone, Brenna Quickfoot, Phandalin ...").
+    A line of six words or more that is mostly the prompt's names is that, not speech."""
+    words = re.findall(r"[a-z']+", text.lower())
+    return len(words) >= 6 and sum(w in prompt_words for w in words) / len(words) >= 0.7
+
 def track_speaker(path: Path, users: list[dict]) -> str:
     """`N-name.flac` → craig-info.json's label for track N, else the file's own name part."""
     m = re.match(r"^(\d+)[-_](.+)$", path.stem)
@@ -126,6 +156,14 @@ def cmd_transcribe(args) -> int:
     log(f"Loading model {args.model} ...")
     model, device = load_model(args.model, args.device)
     log(f"Model on {device}; {len(files)} tracks")
+    hotwords = args.hotwords.strip() or None
+    if hotwords:
+        n = len(model.hf_tokenizer.encode(" " + hotwords).ids)
+        cap = model.max_length // 2 - 1
+        log(f"Vocabulary prompt: {n} tokens" + (f"; whisper keeps the first {cap}" if n > cap else ""))
+    prompt_words = set(re.findall(r"[a-z']+", (hotwords or "").lower())) - FUNCTION_WORDS
+    # A finished track is reused only when it was transcribed the same way.
+    settings = {"model": args.model, "hotwords": hotwords}
 
     out_tracks = []
     total_segments = 0
@@ -135,7 +173,7 @@ def cmd_transcribe(args) -> int:
         done_file = partial / f"{path.stem}.json"
         if done_file.exists():
             track = json.loads(done_file.read_text(encoding="utf-8"))
-            if track.get("model") == args.model:
+            if track.get("model") == args.model and track.get("hotwords") == hotwords:
                 log(f"  {path.name} [{speaker}]: resumed ({len(track['segments'])} segments)")
                 out_tracks.append({"file": path.name, "speaker": speaker, "segments": track["segments"]})
                 total_segments += len(track["segments"])
@@ -143,26 +181,39 @@ def cmd_transcribe(args) -> int:
         where = f"track {i}/{len(files)}: {path.name} ({speaker})"
         status("running", "transcribing", where)
         t0 = time.time()
-        segments, seg_info = model.transcribe(str(path), vad_filter=True, language=args.language or None)
+        # condition_on_previous_text=False: conditioned on its own output, whisper that once drops
+        # into lowercase without punctuation stays there for the rest of a three-hour track, and a
+        # repeated line loops ("i'm good" ×30). hotwords is prefixed to every window, so the names
+        # and a punctuated style ride along where the previous text no longer does.
+        segments, seg_info = model.transcribe(str(path), vad_filter=True, language=args.language or None,
+                                              condition_on_previous_text=False, hotwords=hotwords,
+                                              word_timestamps=True)
         # segments is lazy: the work happens in this loop, so it is where progress is known. The DM's
-        # three-hour track takes ~11 min on large-v3; without this the status sat still that long.
+        # three-hour track takes minutes even on a 5090; without this the status sat still that long.
         segs = []
+        echoes = 0
         reported = t0
         for s in segments:
-            if s.text.strip():
-                segs.append({"start": round(s.start, 2), "end": round(s.end, 2), "text": s.text.strip()})
+            for part in split_on_gaps(s):
+                if not part["text"]:
+                    continue
+                if prompt_words and echoes_prompt(part["text"], prompt_words):
+                    echoes += 1
+                    continue
+                segs.append(part)
             if time.time() - reported >= 15:
                 reported = time.time()
                 status("running", "transcribing",
                        f"{where} {100 * s.end / max(seg_info.duration, 1):.0f}%")
-        write_json(done_file, {"model": args.model, "device": device, "segments": segs}, indent=1)
+        write_json(done_file, {**settings, "device": device, "segments": segs}, indent=1)
         log(f"  {path.name} [{speaker}]: {len(segs)} segments, "
-            f"{seg_info.duration:.0f}s audio in {time.time() - t0:.0f}s")
+            f"{seg_info.duration:.0f}s audio in {time.time() - t0:.0f}s"
+            + (f"; {echoes} prompt echoes dropped" if echoes else ""))
         out_tracks.append({"file": path.name, "speaker": speaker, "segments": segs})
         total_segments += len(segs)
 
     target = sdir / "transcript-segments.json"
-    write_json(target, {"model": args.model, "device": device, "tracks": out_tracks}, indent=1)
+    write_json(target, {**settings, "device": device, "tracks": out_tracks}, indent=1)
     log(f"Wrote {target}")
     status("done", "done", result={"file": str(target), "tracks": len(out_tracks),
                                    "segments": total_segments, "model": args.model,
@@ -194,9 +245,10 @@ def main() -> int:
 
     p = sub.add_parser("transcribe", help="transcribe every track with faster-whisper")
     p.add_argument("--session-dir", required=True)
-    p.add_argument("--model", default="large-v3-turbo")
+    p.add_argument("--model", default="large-v3")
     p.add_argument("--device", default="auto", choices=["auto", "cuda", "cpu"])
     p.add_argument("--language", default="en", help="empty string = autodetect")
+    p.add_argument("--hotwords", default="", help="the campaign's names, prefixed to every window")
     p.add_argument("--fresh", action="store_true", help="ignore tracks finished by an earlier run")
     p.set_defaults(fn=cmd_transcribe)
 

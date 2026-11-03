@@ -4,6 +4,32 @@ What changed for a user of the tools and the skill, release by release. Dates ar
 
 ## Unreleased
 
+- **`transcribe-recording` hears the campaign's names and stays punctuated.**
+  - **`sessions.vocabulary`** (new, optional) in `campaign.json`: the proper nouns said at the
+    table. With the title, the party and the speaker labels it becomes one sentence that goes to
+    every 30 s window as faster-whisper's `hotwords`, so the names come out spelled as the campaign
+    spells them.
+  - **Not conditioned on its own output** (`condition_on_previous_text=False`): once whisper fell
+    into lowercase without punctuation it stayed there for the rest of the track (every track but
+    one, in some sessions), and a repeated line could loop thirty times.
+  - **Segments split at pauses** (word timestamps, a new segment after 1.5 s of quiet). VAD joins
+    the speech before whisper sees it, so a segment could hold lines said twenty minutes apart and
+    land in the transcript at the first one's time.
+  - **Prompt echoes are dropped:** a line that is mostly the vocabulary's names is whisper reading
+    the hotwords back over noise.
+  - **`large-v3` is the default** (was `large-v3-turbo`, which with the same prompt still
+    misheard a PC's name most of the time). A finished track resumes only when its model and
+    vocabulary match.
+  - Measured on two real sessions on an RTX 5090: a three-hour, five-track session in 6½ minutes.
+    One PC's name went from 0 right and 53 wrong to 41 right and 10 wrong, another's from 12 right
+    and 41 wrong to 60 right and 1 wrong.
+- **`build-transcript` respells names by the campaign's sound-alike guide,** `sessions.soundsLike`
+  (new, optional): a name as the campaign spells it → what whisper writes when the table says it
+  their way (`"Aldric": ["Aldrich"]`). Whole words, any case, possessives kept; the report's
+  `respelled` counts each name put right. The hotwords cannot carry a pronunciation, so a name that
+  sounds like a common one still comes out as that one now and then; this catches the rest without
+  a re-transcription, and `transcript-segments.json` keeps whisper's own words.
+
 - **The `session-scribe` skill: a Combat Logs journal page per session,** the Session Diary's pattern
   for the numbers (`campaign.json` → `journals.combatLogs`): the session's `combat-log.html` converted to
   journal HTML by `scripts/combat-log-to-journal.py` (the bar figures as tables, the callouts as readaloud

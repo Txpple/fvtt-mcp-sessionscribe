@@ -132,9 +132,9 @@ records below show the result.
 | --- | --- |
 | `scribe-status` | checks health (Python + CUDA, ffmpeg, Edge, the campaign repo, the login; `connect: true` proves the login), shows what each session has, and follows a job with `date` + `waitSeconds` |
 | `fetch-recording` | turns the Craig link (or the DM's own flac zip) into one track per speaker, labelled by Discord id. Runs as a job |
-| `transcribe-recording` | runs faster-whisper on each track → `transcript-segments.json`. Runs as a job and resumes after a crash |
+| `transcribe-recording` | runs faster-whisper (large-v3) on each track → `transcript-segments.json`, with the campaign's names (`campaign.json`'s title, party, speakers and `sessions.vocabulary`) as hotwords so they come out spelled right. Runs as a job and resumes after a crash |
 | `export-session-chat` | exports the recording window's chat log → `chatlog.json`, with whispers and blind rolls marked |
-| `build-transcript` | merges speech and chat by wall clock → `transcript.md` and `transcript-public.md` (whispers withheld) |
+| `build-transcript` | merges speech and chat by wall clock → `transcript.md` and `transcript-public.md` (whispers withheld), with names respelled by `campaign.json`'s `sessions.soundsLike` |
 | `analyze-combat` | turns By the Books' stat stamps (Battle Flow's too) into per-combat damage, accuracy, healing, spends and moments |
 | `snapshot-party` | exports the party's sheets in full (restorable with Import Data), plus the digest facts |
 | `render-pdf` | prints the outputs' HTML to PDF with headless Edge, and saves every page as a JPEG to check |

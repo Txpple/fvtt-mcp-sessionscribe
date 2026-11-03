@@ -72,6 +72,29 @@ describe('build-transcript', () => {
     ).toBe(0);
   });
 
+  it("respells the speech by campaign.json's sessions.soundsLike and reports it", async () => {
+    const { t, dir } = tool(
+      {
+        ...INPUTS,
+        [`${S}/transcript-segments.json`]: {
+          tracks: [{ speaker: 'DM', segments: [{ start: 1, end: 2, text: "Ald Rick's turn." }] }],
+        },
+      },
+      {
+        ...CAMPAIGN_JSON,
+        sessions: { ...CAMPAIGN_JSON.sessions, soundsLike: { Aldric: ['Ald Rick'] } },
+      }
+    );
+    expect(await t.handleBuildTranscript({ date: '2026-01-06' })).toMatchObject({
+      respelled: { Aldric: 1 },
+    });
+    expect(fs.readFileSync(path.join(dir, 'transcript.md'), 'utf8')).toContain("Aldric's turn.");
+    // whisper's own words stay in the segments file
+    expect(fs.readFileSync(path.join(dir, 'transcript-segments.json'), 'utf8')).toContain(
+      'Ald Rick'
+    );
+  });
+
   it('builds speech-only without a chat log, and names the missing step otherwise', async () => {
     const { [`${S}/chatlog.json`]: _chat, ...noChat } = INPUTS;
     const { t } = tool(noChat);

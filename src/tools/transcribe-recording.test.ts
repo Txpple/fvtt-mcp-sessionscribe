@@ -1,9 +1,14 @@
 import * as path from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
+import { loadCampaign } from '../campaign.js';
 import { loadConfig } from '../config.js';
 import type { JobView, StartJob } from '../jobs.js';
 import { CAMPAIGN_JSON, makeTempRepo, removeTempRepo } from '../testing/campaign-fixture.js';
-import { TRANSCRIBE_WORKER, TranscribeRecordingTool } from './transcribe-recording.js';
+import {
+  TRANSCRIBE_WORKER,
+  TranscribeRecordingTool,
+  vocabularyPrompt,
+} from './transcribe-recording.js';
 
 const roots: string[] = [];
 function setup(files: Record<string, string | object>) {
@@ -49,6 +54,8 @@ describe('transcribe-recording', () => {
       'auto',
       '--language',
       'en',
+      '--hotwords',
+      'The Lost Mine of Phandelver. Aldric Stone, Brenna Quickfoot.',
     ]);
     expect(launched[0]?.kind).toBe('transcribe');
     expect(out).toMatchObject({ tracks: 2, sessionDir: dir });
@@ -57,7 +64,12 @@ describe('transcribe-recording', () => {
   it('passes fresh through, and refuses no tracks, an existing result, and a missing venv', async () => {
     const { tool, launched } = setup(TRACKS);
     await tool.handleTranscribeRecording({ date: '2026-01-06', fresh: true, language: '' });
-    expect(launched[0]?.args.slice(-3)).toEqual(['--language', '', '--fresh']);
+    const args = launched[0]?.args ?? [];
+    expect(args.slice(args.indexOf('--language'), args.indexOf('--language') + 2)).toEqual([
+      '--language',
+      '',
+    ]);
+    expect(args.at(-1)).toBe('--fresh');
 
     const noTracks = setup({ 'sessions/2026-01-06/recap.md': '#' });
     await expect(noTracks.tool.handleTranscribeRecording({ date: '2026-01-06' })).rejects.toThrow(
@@ -79,6 +91,25 @@ describe('transcribe-recording', () => {
     });
     await expect(noVenv.handleTranscribeRecording({ date: '2026-01-06' })).rejects.toThrow(
       /setup\.ps1/
+    );
+  });
+
+  it('builds the vocabulary prompt: title, party, speakers, vocabulary, sound-alikes, each name once, no DM', () => {
+    const root = makeTempRepo({
+      'campaign.json': {
+        ...CAMPAIGN_JSON,
+        sessions: {
+          ...CAMPAIGN_JSON.sessions,
+          speakers: { '1': 'Aldric Stone', '2': 'DM', '3': 'Nundro Rockseeker' },
+          vocabulary: ['Phandalin', ' aldric stone ', 'Wave Echo Cave', 'Phandelver', 'Nundro'],
+          soundsLike: { Aldric: ['Ald Rick'], Gundren: ['Gun Dren'], Brenna: ['Brenda'] },
+        },
+      },
+    });
+    roots.push(root);
+    expect(vocabularyPrompt(loadCampaign(root))).toBe(
+      'The Lost Mine of Phandelver. Aldric Stone, Brenna Quickfoot, Nundro Rockseeker, ' +
+        'Phandalin, Wave Echo Cave, Gundren.'
     );
   });
 });

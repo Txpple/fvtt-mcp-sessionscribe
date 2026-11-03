@@ -103,8 +103,8 @@ Write-Host '== Smoke test (loads tiny model; verifies the CUDA stack where there
 if ($LASTEXITCODE -ne 0) { throw 'Smoke test failed - see output above.' }
 
 if ($PrefetchModel) {
-    Write-Host '== Prefetching large-v3-turbo (~1.6 GB) =='
-    & $py -c "from faster_whisper import download_model; download_model('large-v3-turbo'); print('model cached')"
+    Write-Host '== Prefetching large-v3 (~3 GB) =='
+    & $py -c "from faster_whisper import download_model; download_model('large-v3'); print('model cached')"
 }
 
 Write-Host ''
