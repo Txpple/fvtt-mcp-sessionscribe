@@ -13,10 +13,13 @@ TypeScript now. What changed here: each track's segments are written the moment 
 finishes (audio/.jobs/transcribe.tracks/), so a crash or a killed run resumes where it stopped
 instead of losing the lot, and the job status file (SCRIBE_JOB_STATUS, the src/jobs.ts contract)
 says which track is running. transcript-segments.json is assembled at the end, in the shape
-build-transcript reads: {model, hotwords, device, tracks: [{file, speaker, segments: [{start, end, text}]}]}.
+build-transcript reads: {model, hotwords, fill, device, tracks: [{file, speaker, segments: [{start, end, text}]}]}.
+Each track is decoded twice: whole, then chunk by chunk to fill what the first pass skipped (fill_gaps);
+a segment from the second pass carries "filled": true.
 """
 
 import argparse
+import bisect
 import datetime as dt
 import json
 import os
@@ -92,6 +95,8 @@ def load_model(model_name: str, device: str):
 # --- transcription ------------------------------------------------------------
 
 GAP_SECONDS = 1.5  # a pause between two words this long starts a new segment
+FILL_PAD = 0.2  # a second-pass word this close to a first-pass line is the same speech
+DEDUPE_SECONDS = 2.0  # a filled run this close to a first-pass line is checked for repeating its edge
 FUNCTION_WORDS = {"the", "and", "of", "a", "an"}
 
 
@@ -116,9 +121,77 @@ def split_on_gaps(segment) -> list[dict]:
 
 def echoes_prompt(text: str, prompt_words: set[str]) -> bool:
     """Over noise whisper sometimes reads the hotwords back ("Aldric Stone, Brenna Quickfoot, Phandalin ...").
-    A line of six words or more that is mostly the prompt's names is that, not speech."""
+    A line of six words or more that is mostly the prompt's names is that, not speech; so is a shorter
+    run of names and commas with nothing else in it ("Brenna, Phandalin,")."""
     words = re.findall(r"[a-z']+", text.lower())
-    return len(words) >= 6 and sum(w in prompt_words for w in words) / len(words) >= 0.7
+    if len(words) >= 6:
+        return sum(w in prompt_words for w in words) / len(words) >= 0.7
+    return len(words) >= 2 and "," in text and all(w in prompt_words for w in words)
+
+
+def fill_gaps(kept: list[dict], second_pass, prompt_words: set[str]) -> list[dict]:
+    """Decoding a long track window by window, whisper now and then skips a stretch at a window's
+    edge: speech it transcribes whole when the same seconds are cut out alone (about 1% of the words
+    on three real sessions, story lines among them). A second pass that decodes each VAD chunk on its
+    own misses different lines, so neither pass is whole. Keep the first pass, and add the second
+    pass's words wherever the first has nothing, cut into lines at pauses as the first pass is."""
+    spans = []
+    for a, b in sorted((s["start"] - FILL_PAD, s["end"] + FILL_PAD) for s in kept):
+        if spans and a <= spans[-1][1]:
+            spans[-1][1] = max(spans[-1][1], b)
+        else:
+            spans.append([a, b])
+    starts = [a for a, _ in spans]
+
+    def covered(t: float) -> bool:
+        i = bisect.bisect_right(starts, t) - 1
+        return i >= 0 and t <= spans[i][1]
+
+    lines = sorted(kept, key=lambda s: s["start"])
+    line_starts = [s["start"] for s in lines]
+    added, run = [], []
+
+    def tokens(text: str) -> list[str]:
+        return re.findall(r"[a-z0-9']+", text.lower())
+
+    def overlap(a: list[str], b: list[str]) -> int:
+        """The longest k with a's last k tokens equal to b's first k."""
+        return next((k for k in range(min(len(a), len(b)), 0, -1) if a[-k:] == b[:k]), 0)
+
+    def flush():
+        """A run beside a first-pass line can be that line's edge heard twice, a few tenths of a second
+        apart ("But there's But there's a seal"): trim what the neighbour already says."""
+        words = [w for w in run if tokens(w.word)]
+        run.clear()
+        if not words:
+            return
+        # The next line is the first to start after the run does: a run can end a little past its start.
+        j = bisect.bisect_left(line_starts, words[0].start)
+        if j < len(lines) and lines[j]["start"] - words[-1].end <= DEDUPE_SECONDS:
+            k = overlap([t for w in words for t in tokens(w.word)], tokens(lines[j]["text"]))
+            words = words[:len(words) - k] if k else words
+        i = bisect.bisect_right(line_starts, words[0].start if words else 0) - 1
+        if words and i >= 0 and words[0].start - lines[i]["end"] <= DEDUPE_SECONDS:
+            k = overlap(tokens(lines[i]["text"]), [t for w in words for t in tokens(w.word)])
+            words = words[k:]
+        text = "".join(w.word for w in words).strip()
+        if text and not (prompt_words and echoes_prompt(text, prompt_words)):
+            added.append({"start": round(words[0].start, 2), "end": round(words[-1].end, 2), "text": text,
+                          "filled": True})
+
+    for seg in second_pass:
+        for w in seg.words or []:
+            if not w.word.strip():
+                continue
+            if covered((w.start + w.end) / 2):
+                flush()
+                continue
+            if run and w.start - run[-1].end >= GAP_SECONDS:
+                flush()
+            run.append(w)
+        flush()
+    return added
+
 
 def track_speaker(path: Path, users: list[dict]) -> str:
     """`N-name.flac` → craig-info.json's label for track N, else the file's own name part."""
@@ -162,8 +235,10 @@ def cmd_transcribe(args) -> int:
         cap = model.max_length // 2 - 1
         log(f"Vocabulary prompt: {n} tokens" + (f"; whisper keeps the first {cap}" if n > cap else ""))
     prompt_words = set(re.findall(r"[a-z']+", (hotwords or "").lower())) - FUNCTION_WORDS
+    from faster_whisper import BatchedInferencePipeline
+    second = BatchedInferencePipeline(model)
     # A finished track is reused only when it was transcribed the same way.
-    settings = {"model": args.model, "hotwords": hotwords}
+    settings = {"model": args.model, "hotwords": hotwords, "fill": "batched"}
 
     out_tracks = []
     total_segments = 0
@@ -173,7 +248,7 @@ def cmd_transcribe(args) -> int:
         done_file = partial / f"{path.stem}.json"
         if done_file.exists():
             track = json.loads(done_file.read_text(encoding="utf-8"))
-            if track.get("model") == args.model and track.get("hotwords") == hotwords:
+            if all(track.get(k) == v for k, v in settings.items()):
                 log(f"  {path.name} [{speaker}]: resumed ({len(track['segments'])} segments)")
                 out_tracks.append({"file": path.name, "speaker": speaker, "segments": track["segments"]})
                 total_segments += len(track["segments"])
@@ -205,9 +280,15 @@ def cmd_transcribe(args) -> int:
                 reported = time.time()
                 status("running", "transcribing",
                        f"{where} {100 * s.end / max(seg_info.duration, 1):.0f}%")
+        status("running", "transcribing", f"{where} second pass")
+        second_pass, _ = second.transcribe(str(path), language=args.language or None, hotwords=hotwords,
+                                           word_timestamps=True, batch_size=16)
+        filled = fill_gaps(segs, second_pass, prompt_words)
+        segs = sorted(segs + filled, key=lambda s: s["start"])
         write_json(done_file, {**settings, "device": device, "segments": segs}, indent=1)
         log(f"  {path.name} [{speaker}]: {len(segs)} segments, "
             f"{seg_info.duration:.0f}s audio in {time.time() - t0:.0f}s"
+            + (f"; {len(filled)} filled by the second pass" if filled else "")
             + (f"; {echoes} prompt echoes dropped" if echoes else ""))
         out_tracks.append({"file": path.name, "speaker": speaker, "segments": segs})
         total_segments += len(segs)

@@ -15,8 +15,17 @@ What changed for a user of the tools and the skill, release by release. Dates ar
   - **Segments split at pauses** (word timestamps, a new segment after 1.5 s of quiet). VAD joins
     the speech before whisper sees it, so a segment could hold lines said twenty minutes apart and
     land in the transcript at the first one's time.
-  - **Prompt echoes are dropped:** a line that is mostly the vocabulary's names is whisper reading
-    the hotwords back over noise.
+  - **Prompt echoes are dropped:** a line that is mostly the vocabulary's names, or a short run of
+    names and commas with nothing else in it, is whisper reading the hotwords back over noise.
+  - **A second pass fills what the first skipped.** Decoding a three-hour track window by window,
+    whisper now and then skips a stretch at a window's edge, speech it transcribes whole when the
+    same seconds are cut out alone: about 1% of the words on three real sessions, story lines among
+    them. Each track is now decoded a second time chunk by chunk (faster-whisper's batched
+    pipeline), which misses different lines, and its words go in wherever the first pass has nothing.
+    A filled run that repeats the edge of the line beside it is trimmed, and a filled segment
+    carries `"filled": true` in `transcript-segments.json`. On the three sessions the
+    merged transcript keeps every word the second pass heard and loses only fillers of the first;
+    a three-hour session takes about nine minutes on an RTX 5090 (six and a half with one pass).
   - **`large-v3` is the default** (was `large-v3-turbo`, which with the same prompt still
     misheard a PC's name most of the time). A finished track resumes only when its model and
     vocabulary match.

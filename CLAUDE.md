@@ -29,7 +29,7 @@ past 1.3.2, unreleased: the skill's combat-logs page (`journals.combatLogs`,
 `scripts/combat-log-to-journal.py`), the Session Diary's pattern for the numbers; and transcription
 that hears the campaign (2026-11-03): `large-v3` by default, `campaign.json`'s names as hotwords
 (`sessions.vocabulary`), no conditioning on its own output, segments split at pauses, prompt echoes
-dropped, and `build-transcript` respelling by the sound-alike guide (`sessions.soundsLike`,
+dropped, a second (batched, chunk-by-chunk) pass filling what the first skipped, and `build-transcript` respelling by the sound-alike guide (`sessions.soundsLike`,
 `src/transcript/sounds-like.ts`). Replayed on two real sessions' audio into a scratch copy; not yet
 run through the live server, which needs a restart to load it. The reader gate
 (`scripts/verify-reader.mjs`) passed live on the sandbox with By the Books 3.0.0 (the probe names
