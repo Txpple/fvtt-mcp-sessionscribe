@@ -16,7 +16,7 @@ export const literal = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 /**
  * One whole-word, case-insensitive pattern per heard form, the longest first so "See Sil" wins
- * over "Sil". Words in a form match across any spaces or hyphens ("Kar-tor", "Kar tor").
+ * over "Sil". Words in a form match across any spaces or hyphens ("Al-dric", "Al dric").
  */
 function rules(guide: SoundsLike): Rule[] {
   const out: Rule[] = [];
