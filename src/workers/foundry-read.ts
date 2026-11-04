@@ -31,7 +31,11 @@ async function main(): Promise<void> {
     reply({
       ok: false,
       host: req.host,
-      error: `reader watchdog: no answer in ${timeoutMs / 1000}s`,
+      error:
+        `the world could not be joined within the reader's ${timeoutMs / 1000} s budget: the join ` +
+        'as the scribe never reached game.ready (or the read hung after it). Check FOUNDRY_URL in ' +
+        "the bridge's .env — the path to the box may be slow or down (FOUNDRY_URL_FALLBACK names a " +
+        'second one), the world asleep or not launched — then scribe-status { connect: true }.',
     });
     process.exit(3);
   }, timeoutMs);

@@ -4,6 +4,12 @@ What changed for a user of the tools and the skill, release by release. Dates ar
 
 ## Unreleased
 
+- **The reader's watchdog says what ran out.** `export-session-chat` and
+  `scribe-status { connect: true }` answered "reader watchdog: no answer in 240s" when the world
+  could not be joined (every login of 2026-11-04, on a path that dropped packets); the line now says
+  the world could not be joined within the reader's budget, points at `FOUNDRY_URL` in the bridge's
+  .env (a slow or down path, `FOUNDRY_URL_FALLBACK` for a second one, a world asleep or not
+  launched) and at `scribe-status { connect: true }` to check again.
 - **`transcribe-recording` hears the campaign's names and stays punctuated.**
   - **`sessions.vocabulary`** (new, optional) in `campaign.json`: the proper nouns said at the
     table. With the title, the party and the speaker labels it becomes one sentence that goes to
