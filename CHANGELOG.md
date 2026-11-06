@@ -2,7 +2,7 @@
 
 What changed for a user of the tools and the skill, release by release. Dates are tag dates.
 
-## Unreleased
+## 1.3.3 — 2026-11-06 — transcription hears the campaign's names
 
 - **The reader's watchdog says what ran out.** `export-session-chat` and
   `scribe-status { connect: true }` answered "reader watchdog: no answer in 240s" when the world

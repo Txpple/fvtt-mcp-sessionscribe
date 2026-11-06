@@ -15,7 +15,7 @@ the campaign repo:
 It **reads the world and never writes it**. The session-diary and combat-logs pages and the bestiary are authored
 through `fvtt-mcp-dnd5e`.
 
-**State (2026-11-06).** At **1.3.2**, released: `FOUNDRY_HOST=generic` (any Foundry at a URL) is a
+**State (2026-11-06).** At **1.3.3**, released: `FOUNDRY_HOST=generic` (any Foundry at a URL) is a
 host the scribe knows and the default (prod is a self-hosted box; the doctor green on it), with the
 skill's changes since 1.3.1 (the transcript the only source, the diary page from `recap.html`, found
 documents on the clue board, the Bestiary step). Since 1.3.1 `analyze-combat` folds 53 By the Books families
@@ -24,13 +24,12 @@ it reads By the Books, Battle Flow's new name from
 its 3.0.0 (package id `fvtt-mod-bythebooks`, Txpple/fvtt-mod-bythebooks#6). The scan reads each
 card's stamps from the new flag scope and falls back to `fvtt-mod-battleflow` on that same card,
 since pre-upgrade cards keep the old scope forever; the probe reports `bythebooks { active,
-version, id }`, preferring the new id and falling back to a table still on 2.x. `main` carries
-past 1.3.2, unreleased: the skill's combat-logs page (`journals.combatLogs`,
+version, id }`, preferring the new id and falling back to a table still on 2.x. 1.3.3 adds the skill's combat-logs page (`journals.combatLogs`,
 `scripts/combat-log-to-journal.py`), the Session Diary's pattern for the numbers; and transcription
 that hears the campaign (2026-11-03): `large-v3` by default, `campaign.json`'s names as hotwords
 (`sessions.vocabulary`), no conditioning on its own output, segments split at pauses, prompt echoes
 dropped, a second (batched, chunk-by-chunk) pass filling what the first skipped, and `build-transcript` respelling by the sound-alike guide (`sessions.soundsLike`,
-`src/transcript/sounds-like.ts`); and the reader's watchdog saying the world could not be joined within its budget. `dist` built from `main`. Replayed on two real sessions' audio into a scratch copy; not yet
+`src/transcript/sounds-like.ts`); and the reader's watchdog saying the world could not be joined within its budget. `dist` built from the tag. Replayed on two real sessions' audio into a scratch copy; not yet
 run through the live server, which needs a restart to load it. The reader gate
 (`scripts/verify-reader.mjs`) passed live on the sandbox with By the Books 3.0.0 (the probe names
 it; an idle scribe as the elected GM changed nothing). Not yet read live: a 3.0 card's stamps
