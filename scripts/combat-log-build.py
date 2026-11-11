@@ -185,7 +185,13 @@ for index, (heading, content) in enumerate(sections):
         elif kind == "bars":
             parts.append(bars(*payload))
         elif kind == "ul":
-            parts.append("<ul>" + "".join(f"<li>{inline(x)}</li>" for x in payload) + "</ul>")
+            items = [f"<li>{inline(x)}</li>" for x in payload]
+            label = parts and re.fullmatch(r"<p><strong>[^<]{1,80}</strong></p>", parts[-1])
+            if label and len(items) > 1:  # a one-line label over a list travels with the list's first item
+                parts[-1] = f'<div class="keep">{parts[-1]}<ul>{items[0]}</ul></div>'
+                parts.append("<ul>" + "".join(items[1:]) + "</ul>")
+            else:
+                parts.append("<ul>" + "".join(items) + "</ul>")
         elif kind == "table":
             head, align, rows = payload
             if len(rows) > 8:

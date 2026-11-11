@@ -114,6 +114,8 @@ def dress(html, kicker, title):
             f'<p style="margin:0;{SERIF};font-size:13.5px;color:{MUTED}">{m.group(1)}</p></div>')
     html = html[:m.start()] + head + html[m.end():]
 
+    # the printed report splits a long table after its first row so the page can break; here it is one table
+    html = html.replace("</tbody></table><table><tbody>", "")
     html = re.sub(r"<table>.*?</table>", _table, html, flags=re.S)
     html = re.sub(r'<blockquote[^>]*>(.*?)</blockquote>', _quote, html, flags=re.S)
     html = re.sub(r'<p class="lead">', f'<p style="{P};font-style:italic;font-size:16.5px;margin-bottom:16px">', html)
