@@ -6,18 +6,25 @@ journal cannot draw (no stylesheet), become two-column tables under the figure's
 report's own provenance line ("Source: analyze-combat ...") is the scribe's, not the players',
 and is dropped.
 
-usage: python scripts/combat-log-to-journal.py <combat-log.html> <out.html>
+usage: python scripts/combat-log-to-journal.py <combat-log.html> <out.html> [--plain] [--title-image <src>]
+
+  --title-image  the Data-relative path of the session's title picture (the Session Diary page's own),
+                 set on top so the page has a picture on its card (DM, 2026-11-11)
 
 Mapping: header -> date line (played, n combats); p.lead -> p.lead minus the Source sentence;
 div.callout -> blockquote.readaloud; h2 "N · Title" -> h2.spaced "Title"; figure of bars ->
 h3 caption + table (name, value) + the figure note; table.data -> a plain table; code -> em.
 Classes, inline styles, sections and wrapper divs are dropped.
+Then the page is dressed as the printed report (journal_parchment.py: a parchment sheet, the bar
+figures drawn as bars again); `--plain` as a third argument skips that.
 """
 import re
 import sys
 from html.parser import HTMLParser
 
 src, out = sys.argv[1:3]
+plain = "--plain" in sys.argv[3:]
+title_image = sys.argv[sys.argv.index("--title-image") + 1] if "--title-image" in sys.argv else ""
 s = open(src, encoding="utf-8").read()
 
 header = re.search(r"<header>(.*?)</header>", s, re.S).group(1)
@@ -188,5 +195,14 @@ html = "".join(c.out)
 html = re.sub(r"\s+", " ", html)
 html = re.sub(r">\s+<", "><", html)
 html = f"<p><em>{date_line}</em></p>" + html.strip()
+tables = html.count("<table>")
+if title_image:
+    html = (f'<figure style="margin:0 0 0.75em"><img src="{title_image}" alt="" '
+            'style="max-width:100%;border-radius:4px"></figure>') + html
+if not plain:
+    from journal_parchment import dress
+    kicker = re.search(r'<p class="eyebrow">(.*?)</p>', header, re.S).group(1).strip()
+    title = re.sub(r"\s+", " ", re.search(r"<h1>(.*?)</h1>", header, re.S).group(1)).strip()
+    html = dress(html, kicker, title)
 open(out, "w", encoding="utf-8").write(html)
-print(f"{out}: {len(html)} chars, {html.count('<table>')} tables, {html.count('<h2')} sections, {html.count('<blockquote')} callouts")
+print(f"{out}: {len(html)} chars, {tables} tables, {html.count('<h2')} sections, {html.count('<blockquote')} callouts")

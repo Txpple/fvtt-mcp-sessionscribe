@@ -13,17 +13,22 @@ usage: python scripts/recap-to-journal.py <recap.html> <asset-prefix> <title-ima
 Mapping: header -> date line; the TL;DR -> p.lead; h2 -> h2.spaced; picture tables -> figure with
 figcaption; party cards (00-*.jpg) -> a floated portrait beside the text; the shaded song box and
 any quoted document -> blockquote.readaloud. Inline styles, tables and spans are dropped.
+Then the page is dressed as the printed recap (journal_parchment.py: a parchment sheet with the
+kicker, the title and the date at its head); `--plain` as a fifth argument skips that.
 """
 import re
 import sys
 from html.parser import HTMLParser
 
 src, prefix, title_img, out = sys.argv[1:5]
+plain = "--plain" in sys.argv[5:]
 s = open(src, encoding="utf-8").read()
 
 # The header row of the outer table holds the kicker, the h1 and the date.
 head_end = s.index("</tr>")
 date = re.sub(r"\s+", " ", re.findall(r"<p[^>]*>(.*?)</p>", s[:head_end], re.S)[-1]).strip()
+kicker = re.sub(r"\s+", " ", re.findall(r"<p[^>]*>(.*?)</p>", s[:head_end], re.S)[0]).strip()
+title = re.sub(r"\s+", " ", re.search(r"<h1[^>]*>(.*?)</h1>", s[:head_end], re.S).group(1)).strip()
 body = s[head_end:]
 
 # The TL;DR is the first italic body paragraph of real length (session 0 opens with a short
@@ -101,6 +106,10 @@ class Conv(HTMLParser):
                 self.p_stack.append("h3")
                 self.emit("<h3>")
                 return
+            if "border-left" in style:  # a quoted document or a verse, set off in the email by a rule
+                self.p_stack.append("p></blockquote")
+                self.emit('<blockquote class="readaloud"><p>')
+                return
             self.p_stack.append("p")
             self.emit('<p class="lead">' if a.get("data-lead") else "<p>")
             return
@@ -164,5 +173,8 @@ top = (f'<figure style="margin:0 0 0.75em"><img src="{prefix}{title_img}" alt="{
        + (f"{FIGCAPTION}{cap}</figcaption>" if cap else "")
        + "</figure>")
 html = top + f"<p><em>{date}</em></p>" + html.strip()
+if not plain:
+    from journal_parchment import dress
+    html = dress(html, kicker, title)
 open(out, "w", encoding="utf-8").write(html)
 print(f"{out}: {len(html)} chars; title picture {title_img}")

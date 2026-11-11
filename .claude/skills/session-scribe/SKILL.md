@@ -151,9 +151,12 @@ Let `date` be the session's real date (`YYYY-MM-DD`).
      art staging folder; 1600-px JPEG copies to `<session>/img/NN-slug.jpg`, numbered in reading
      order, woven into both recap.html and recap-print.html with in-world captions. Nothing goes
      into Foundry until the owner approves it.
-   - `combat-stats.md` + `combat-log.html` — the combat report from step 5; template
-     `templates/combat-log.html`. GM-facing: exact numerals wanted. Keep its `.keep` groups (a
-     heading with its first block), as in recap-print.html.
+   - `combat-stats.md` + `combat-log.html` — the combat report from step 5. **Write the markdown
+     and build the page from it:** `python scripts/combat-log-build.py <session>/combat-stats.md
+     <session>/combat-log.html` lays it into `templates/combat-log.html`'s page (its stylesheet,
+     its `.keep` groups, its bar figures), so the HTML, the PDF and the journal page carry the same
+     words and numbers. Exact numerals wanted. Its shape is "The combat report" at the end of this
+     file; the model is the newest session's `combat-stats.md`.
    - `gm-notes.md` + `.html`, or the split pair `gm-notes-story` (plot: what changed in the world,
      what is now canon, promises and their status, open threads, loot with story weight, quotes)
      and `gm-notes-mechanics` (bookkeeping checklist to apply to the live world — levels, items,
@@ -183,16 +186,31 @@ Let `date` be the session's real date (`YYYY-MM-DD`).
    caption, then the date line. Upload `<session>/img/` to that asset folder first
    (`upload-asset-tree`), send the converted HTML as the page's `content`, then read it back and
    check the figure and image counts survived.
+   **Both converters dress the page as the printed record** (`scripts/journal_parchment.py`: a
+   parchment sheet, Georgia, the kicker, title and date at its head; every style is inline, since
+   a journal page has no stylesheet; `--plain` skips it). The wrapper's class `parchment-sheet` is
+   what Card Catalogue's Reader looks for to leave out its dark title and surround.
+   **A page's web link** is Card Catalogue's *Copy link*
+   (`<site>/modules/fvtt-mod-cardcatalogue/templates/link/link.xml?page=<the page's uuid>`); give
+   the DM the diary's and the combat log's in the wrap report. Never upload a record into Data as
+   a file to get a link: Data has no login.
+   **A long page** is awkward as a tool argument: write the arguments to a JSON file and send
+   them with `fvtt-mcp-dnd5e/scripts/call.mjs manage-journals @args.json`, after
+   `disconnect-bridge` (both use the same seat).
 8¼. **The combat-logs page** — when `journals.combatLogs` is set: the Session Diary's pattern
    again, for the numbers. Append ONE player-visible text page to that journal (`update` with
    `newPageName` + `playerVisible: true`), named `Session N — <title>` as the diary's page is.
-   **The page is combat-log.html itself**, every section and table, converted by
-   `python scripts/combat-log-to-journal.py <session>/combat-log.html <out.html>`: the date
-   line and the count of combats on top, the bar figures as two-column tables under their
-   captions, the callouts as readaloud blocks; the scribe's provenance line and footer dropped.
+   **The page is combat-log.html itself**, every section, chart and table, converted by
+   `python scripts/combat-log-to-journal.py <session>/combat-log.html <out.html> --title-image
+   <the diary page's title picture, Data-relative>`: that picture on top, so the page's card has
+   one; then the kicker, the title and the date; the bar figures drawn as bars; the callouts
+   shaded; the scribe's provenance line and footer dropped.
    Send the HTML as the page's `content`, read it back and check the table and section counts
    against the script's line. Players read it, so nothing GM-only goes in: the combat log is
    written from the public transcript's rolls already.
+   **The combat log is posted every session, as the diary is** (DM, 2026-11-11). A session with
+   no fight still gets its page: the checks and rolls of the night under "Economy and flavour",
+   and a sentence saying there was no combat.
 8½. **The Bestiary** — when `journals.bestiary` is set: list every creature the party fought this
    session (the combat log's enemy side; a variant counts as its MM family), drop those that
    already have a page (`manage-journals get` on the Bestiary), and run fvtt-mcp-dnd5e's
@@ -247,3 +265,37 @@ Let `date` be the session's real date (`YYYY-MM-DD`).
   markers (build-transcript reports them); the API is mapped in the scribe's `src/craig.ts`
   header. Craig is open source (CraigChat/craig) if the API shape ever drifts; until the scribe
   is fixed, `zipPath` is the fallback.
+
+## The combat report (the approved shape, 2026-11-11)
+
+`combat-stats.md` is the source, and `scripts/combat-log-build.py` documents the markdown it
+reads. Players read the page, so it carries no player names, no table or tech talk, and nothing
+from a whisper or a GM note. What the software got wrong belongs in the mechanics notes.
+
+Write the sections in this order:
+
+1. **The source line**, one paragraph: where the numbers come from, how many combats, how many
+   rounds each, how many creatures died.
+2. **The headline**, a `>` callout: the one fact of the night in numbers, in bold, then its
+   evidence. Find this sentence before writing anything else.
+3. **`## 1 · Totals`**: a bar figure of damage dealt by the party and one of damage taken, the
+   totals table (dealt, taken, healed, kills, natural 20s and 1s; plain numbers in the cells),
+   then one paragraph that says what the bare numbers hide.
+4. **One section per fight**, `## N · <Scene> — <the enemy>, <n> rounds`: first a paragraph that
+   opens **What decided it.**, then a bar figure of what killed the enemy by source, then the
+   per-combatant table (dealt, per round, accuracy, taken). For a fight where the enemy attacked
+   often, add a bar figure of where its attacks went: landed, and each feature that turned one.
+   Close a hard fight with **Luck or balance.**, the odds worked back off the sheets.
+5. **`## N · What the buffs and features actually bought`**: a bar figure of damage added and
+   one of damage prevented, by effect, then the table of every effect that touched a number
+   (uses, what it produced), then **The duds, plainly:** and **The winners:** in one paragraph.
+   An estimate is labelled as one.
+6. **`## N · Combat flow — decision speed`**: a bar figure of average decision time, the table,
+   one sentence.
+7. **`## N · Economy and flavour`**: resources spent and where the sheets stand, then the
+   night's dice as a list (natural 20s and 1s, advantage, death saves, checks out of combat).
+
+Charts: single-series bars, one hue, the value at the end of each bar, no legend. A figure's
+bars add up to a number the caption names ("its 23 hit points, by source"), so a reader can
+check it. Every number traces to the ledger or the chat rolls, and each figure agrees with the
+table beside it. Render the PDF and look at every page before shipping.
